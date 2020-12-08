@@ -1,7 +1,7 @@
 name = "CameraModels"
 uuid = "0d57b887-6120-40e6-8b8c-29d3116bc0c1"
-authors = ["@dehann"]
-version = 0.1.0
+keywords = ["camera", "model", "pinhole", "distortion", "robotics", "images"]
+version = "0.1.0"
 
 [compat]
 julia = 1.4
