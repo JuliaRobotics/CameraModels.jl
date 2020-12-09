@@ -3,13 +3,15 @@ uuid = "0d57b887-6120-40e6-8b8c-29d3116bc0c1"
 keywords = ["camera", "model", "pinhole", "distortion", "robotics", "images"]
 version = "0.1.0"
 
-[compat]
+[deps]
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+
+[compat]
+DocStringExtensions = "0.8"
 StaticArrays = "1"
 julia = "1.4"
 
 [extras]
-DocStringExtensions = "0.8"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
