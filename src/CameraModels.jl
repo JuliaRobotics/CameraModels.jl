@@ -14,7 +14,7 @@ abstract type AbstractCameraModel end
 """
     $TYPEDEF
 
-Pinhole Camera model is the most simplistic camera model assuming an ideal pinhole camera model.
+Pinhole Camera model is the most simplistic.
 
 Notes
 - https://en.wikipedia.org/wiki/Pinhole_camera
@@ -24,6 +24,9 @@ Notes
   - Direct comparison with [OpenCV convention](https://docs.opencv.org/3.4/d9/d0c/group__calib3d.html) is:
     - `(x,y) [CamXYZ] <==> (j,i) [Images.jl] <==> (u,v) [OpenCV]` -- look very carfully at `(u,v) <==> (j,i)` in *image-frame*
 - Always follow right hand rule for everything.
+
+DevNotes
+- https://en.wikipedia.org/wiki/Distortion_(optics)
 """
 struct PinholeCamera{R <: Real} <: AbstractCameraModel
   K::SMatrix{3,3,R}
