@@ -67,7 +67,31 @@ function PinholeCamera(img::AbstractArray{T,2}) where T
     PinholeCamera(f_w=f_w, f_h=f_h, c_w=c_w, c_h=c_h)
 end
 
-
 # Radial distortion model
+
+# From Wikipedia: https://en.wikipedia.org/wiki/Distortion_(optics)
+#  ( xd ,   yd ) = distorted image point as projected on image plane using specified lens,
+#  ( xu ,   yu ) = undistorted image point as projected by an ideal pinhole camera,
+#  ( xc ,   yc ) = distortion center,
+#              r = sqrt( (xd - xc)^2 + (yd - yc)^2 )
+#
+# xu = xc + (xd + xc) / (1 + K1*(r^2) + K2*(r^4) + ...)
+# yu = yc + (yd + yc) / (1 + K1*(r^2) + K2*(r^4) + ...)
+
+struct RadialDistortion{N, R <: Real, THR}
+    Ki::SVector{N,R}
+    center::SVector{2,R}
+    _radius::SVector{THR, R}
+end
+
+RadialDistortion(;Ki::AbstractVector{R}=[0.0;], 
+                  center::AbstractVector{<:Real}=[0.0;0]) where {R <: Real} = RadialDistortion{length(Ki),R, Threads.nthreads()}(Ki, center, zeros(R, Threads.nthreads()))
+#
+
+function (rd::RadialDistortion{N,R,THR})() where {N,R,THR}
+
+    
+end
+
 
 end # module
