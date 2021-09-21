@@ -5,6 +5,8 @@ Basic Camera Models including pinhole, radial distortion and more.
 
 This package is still in development.
 
+Future work to consolidate/complement https://www.github.com/yakir12/CameraModels.jl
+
 # TODO List
 
 - [ ] Copy existing camera code from Caesar.jl and RoME.jl here,
