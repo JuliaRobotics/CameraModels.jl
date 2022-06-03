@@ -16,3 +16,4 @@ run_test_bench(model)
     @test origin(ray) ≈ CameraModels.Point3(0,0,0)
 
 end
+
