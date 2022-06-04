@@ -8,7 +8,7 @@ const Vector3 = SVector{3, Float64}
 
 # Abstract type
 abstract type AbstractCameraModel end
-CameraModel = AbstractCameraModel # likely to be deprecated
+CameraModel = (@warn("CameraModels.CameraModel is deprecated, use CameraModels.AbstractCameraModel instead");AbstractCameraModel)
 
 origin3d = zeros(Point3)
 

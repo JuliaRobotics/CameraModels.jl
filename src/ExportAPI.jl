@@ -2,10 +2,8 @@
 
 
 export AbstractCameraModel
-export CameraModel
 
-export PinholeCamera
-export Pinhole
+
 export CameraSkewDistortion
 
 export RadialDistortion
