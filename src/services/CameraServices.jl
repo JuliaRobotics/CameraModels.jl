@@ -58,10 +58,12 @@ PinholeCamera(; f_w::Real=300,
                 c_w::R=320.0,
                 c_h::Real=240,
                 shear::Real=0) where {R <: Real} = SMatrix{3,3,R}([f_w shear c_w;
-                                                                     0  f_h  c_h;
-                                                                     0    0    1])
+                                                                    0   f_h  c_h;
+                                                                    0     0    1])
+#
+
 """
-    $TYPEDSIGNATURES
+    $SIGNATURES
 
 Constructor helper assuming you just have a camera image and need to start somewhere for a basic camera model.
 

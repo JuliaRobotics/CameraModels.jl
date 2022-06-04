@@ -3,13 +3,11 @@
 
 ## From yakir12/CameraModels.jl
 struct Pinhole <: CameraModel
-    
-  Pinhole(pixelwidth::Int, pixelheight::Int, prinicipalpoint::PixelCoordinate, focallength::Vector2) = new(prinicipalpoint, focallength, pixelwidth, pixelheight)
-
-  prinicipalpoint::PixelCoordinate # in pixels
-  focallength::Vector2 # in pixels
+  # note order of elements has been changed from original source so that inner constructor can be removed.
   columns::Int
   rows::Int
+  prinicipalpoint::PixelCoordinate # in pixels
+  focallength::Vector2             # in pixels
 end
 
 
@@ -34,3 +32,22 @@ DevNotes
 struct PinholeCamera{R <: Real} <: AbstractCameraModel
   K::SMatrix{3,3,R}
 end
+
+
+Base.@kwdef struct CameraIntrinsic
+  K::Array{Float64,2}
+end
+CameraIntrinsic(;x0=320.0,y0=240.0,fx=510.0,fy=510.0,s=0.0) = CameraIntrinsic([[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'])
+
+
+# Camera extrinsic must be world in camera frame (cRw)
+Base.@kwdef struct CameraExtrinsic{T <: Real}
+  R::Rot_.RotMatrix{T} = id = one(Rot_.RotMatrix{3, Float64})
+  t::Vector{T} = zeros(3)
+end
+
+Base.@kwdef struct CameraModelFull
+  ci::CameraIntrinsic = CameraIntrinsic()
+  ce::CameraExtrinsic = CameraExtrinsic()
+end
+
