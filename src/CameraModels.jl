@@ -13,7 +13,6 @@ include("ExportAPI.jl")
 include("entities/GeneralTypes.jl")
 include("entities/CameraTypes.jl")
 include("entities/RadialDistortion.jl")
-include("entities/CameraSkewDistortion.jl")
 
 # function logic
 include("services/Prototypes.jl")
