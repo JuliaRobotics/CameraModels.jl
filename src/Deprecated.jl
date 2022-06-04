@@ -26,6 +26,25 @@ function CameraModelandParameters(
   CameraCalibration(;width,height,K)
 end
 
+
+function Base.getproperty(x::CameraModelandParameters, f::Symbol)
+  if f == :skew
+    getfield(x, :K)[1,2]
+  elseif f == :columns
+    getfield(x, :width)
+  elseif f == :rows
+    getfield(x, :height)
+  elseif f == :prinicipalpoint || f == :cc
+    SA[(getfield(x, :K)[1:2, 3])...]
+  elseif f == :focallength || fc == :fc
+    K = getfield(x, :K)
+    SA[K[1,1];K[2,2]] 
+  else
+    getfield(x, f)
+  end
+end
+
+
 # """
 # Data structure for a Camera model with parameters.
 # Use `CameraModel(width,height,fc,cc,skew,kc)` for easy construction.
@@ -131,7 +150,7 @@ function Base.getproperty(x::Pinhole, f::Symbol)
   elseif f == :rows
     getfield(x, :height)
   elseif f == :prinicipalpoint
-    view(getfield(x, :K), 1:2, 3)
+    SA[(getfield(x, :K)[1:2, 3])...]
   elseif f == :focallength
     K = getfield(x, :K)
     SA[K[1,1];K[2,2]] 
