@@ -14,41 +14,37 @@ Notes
 
 Also see: (TODO: `ProjectiveCameraModel`)
 """
-Base.@kwdef struct CameraCalibration{R <: Real} <: AbstractCameraModel
+struct CameraCalibration{R <: Real} <: AbstractCameraModel
   """ numver of pixels from top to bottom """
-  height::Int		= 480
+  height::Int		# = 480
   """ number of pixels from left to right """
-  width::Int		= 640
+  width::Int		# = 640
   """ distortion coefficients up to fifth order """
-  kc::Vector{Float64} = zeros(5)
+  kc::Vector{Float64} # = zeros(5)
   """ 3x3 camera calibration matrix """
-  K::SMatrix{3,3,R}   = SMatrix{3,3}([[height;skew;width/2]';[0.0;height;height/2]';[0.0;0;1]'] )
+  K::SMatrix{3,3,R}   # = SMatrix{3,3}([[height;0.0;width/2]';[0.0;height;height/2]';[0.0;0;1]'] )
   """ inverse of a 3x3 camera calibration matrix """
-  Ki::SMatrix{3,3,R}  = inv(K)
+  Ki::SMatrix{3,3,R}  # = inv(K)
 end
 
 
 CameraCalibration(;
   width::Int = 640,
   height::Int= 480,
-  center = [width/2;height/2],
-  focal  = 1.1*[height; height], # just emperical default
+  center::Union{<:AbstractVector,<:PixelCoordinate} = [width/2;height/2],
+  focal::AbstractVector  = 1.1*[height; height], # just emperical default
+  kc::AbstractVector{<:Real} = zeros(5),
   skew::Real = 0.0,
-  kwargs...
-) = CameraCalibration(;width, height, K=[[focal[1];skew;center[1]]';[0.0;focal[2];center[2]]';[0.0;0;1]'], kwargs... )
+  K=SMatrix{3,3}([[focal[1];skew;center[1]]';[0.0;focal[2];center[2]]';[0.0;0;1]']),
+) = CameraCalibration(height, width, kc, K, inv(K))
 
 
 
 ## FIXME consolidation necessary
 
-## From yakir12/CameraModels.jl
-struct Pinhole <: AbstractCameraModel
-  # note order of elements has been changed from original source so that inner constructor can be removed.
-  columns::Int
-  rows::Int
-  prinicipalpoint::PixelCoordinate # in pixels
-  focallength::Vector2             # in pixels
-end
+const Pinhole = CameraCalibration
+Pinhole(columns::Int,rows::Int,prinicipalpoint,focallength::Vector2 ) = CameraCalibration(;width=columns,height=rows,center=prinicipalpoint,focal=focallength)
+
 
 
 ## From JuliaRobotics/Caesar.jl
