@@ -46,30 +46,6 @@ struct CameraCalibration{R <: Real} <: AbstractCameraModel
 end
 
 
-CameraCalibration(;
-  width::Int = 640,
-  height::Int= 480,
-  center::Union{<:AbstractVector,<:PixelCoordinate} = [width/2;height/2],
-  focal::AbstractVector  = 1.1*[height; height], # just emperical default
-  kc::AbstractVector{<:Real} = zeros(5),
-  skew::Real = 0.0,
-  K::AbstractMatrix =[[focal[1];skew;center[1]]';[0.0;focal[2];center[2]]';[0.0;0;1]'],
-) = CameraCalibration(height, width, kc, SMatrix{3,3}(K), SMatrix{3,3}(inv(K)) )
 
 
-
-
-"""
-Data structure for a Camera model with parameters.
-Use `CameraModel(width,height,fc,cc,skew,kc)` for easy construction.
-"""
-struct CameraModelandParameters <: AbstractCameraModel
-    width::Int		# image width
-    height::Int		# image height
-    fc::Vector{Float64}	# focal length in x and y
-    cc::Vector{Float64}	# camera center
-    skew::Float64	    # skew value
-    kc::Vector{Float64} # distortion coefficients up to fifth order
-    K::Matrix{Float64} # 3x3 camera calibration matrix (Camera intrinsics)
-    Ki::Matrix{Float64} # inverse of a 3x3 camera calibratio matrix
-end
+#

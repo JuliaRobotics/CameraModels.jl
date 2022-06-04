@@ -1,7 +1,45 @@
 
 
-
+## ================================================================================================
 ## consolidated types below
+
+export CameraModel # being replaced by AbstractCameraModel
+CameraModel = (@warn("CameraModels.CameraModel is deprecated, use CameraModels.AbstractCameraModel instead");AbstractCameraModel)
+# abstract type CameraModel end 
+
+
+export CameraModelandParameters
+const CameraModelandParameters = (@warn("CameraModels.CameraModelandParameters is deprecated, use CamereModels.CameraCalibration instead.");CameraCalibration)
+
+function CameraModelandParameters(
+    width::Int,
+    height::Int,
+    fc::AbstractVector{<:Real},
+    cc::AbstractVector{<:Real},
+    skew::Real,
+    kc::AbstractVector{<:Real},
+    K::AbstractMatrix{<:Real}  = [[fc[1];skew;cc[1]]';[0.0;fc[2];cc[2]]';[0.0;0;1]'], # legacy constructor
+    Ki::AbstractMatrix{<:Real} = inv(K)
+  )
+  #
+  @warn("CameraModels.CameraModelandParameters is deprecated, use CamereModels.CameraCalibration instead.")
+  CameraCalibration(;width,height,K)
+end
+
+# """
+# Data structure for a Camera model with parameters.
+# Use `CameraModel(width,height,fc,cc,skew,kc)` for easy construction.
+# """
+# struct CameraModelandParameters <: AbstractCameraModel
+#     width::Int		# image width
+#     height::Int		# image height
+#     fc::Vector{Float64}	# focal length in x and y
+#     cc::Vector{Float64}	# camera center
+#     skew::Float64	    # skew value
+#     kc::Vector{Float64} # distortion coefficients up to fifth order
+#     K::Matrix{Float64} # 3x3 camera calibration matrix (Camera intrinsics)
+#     Ki::Matrix{Float64} # inverse of a 3x3 camera calibratio matrix
+# end
 
 
 export CameraIntrinsic
@@ -111,9 +149,6 @@ end
 #   focallength::Vector2             # in pixels
 # end
 
-
-export CameraModel # being replaced by AbstractCameraModel
-# abstract type CameraModel end 
 
 
 #

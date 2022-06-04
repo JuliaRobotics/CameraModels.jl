@@ -11,8 +11,10 @@ include("ExportAPI.jl")
 
 # data types
 include("entities/GeneralTypes.jl")
-include("entities/CameraTypes.jl")
+include("entities/CameraCalibration.jl")
 include("entities/RadialDistortion.jl")
+
+include("services/CameraCalibration.jl")
 
 # legacy implementations
 include("Deprecated.jl")
