@@ -1,8 +1,48 @@
 
+"""
+    $TYPEDEF
+
+Standard pinhole camera model with distortion parameters (aka camera intrinsics).  
+
+Notes
+- Image origin assumed as top-left.
+- Keeping with Images.jl,
+  - width of the image are matrix columns from left to right.
+  - height of the image are matrix rows from top to bottom.
+  - E.g. `mat[i,j] == img[h,w] == mat[h,w] == img[i,j]`
+    - This is to leverage the unified Julia Arrays infrastructure, incl vectors, view, Static, CPU, GPU, etc.
+
+Also see: (TODO: `ProjectiveCameraModel`)
+"""
+Base.@kwdef struct CameraCalibration{R <: Real} <: AbstractCameraModel
+  """ numver of pixels from top to bottom """
+  height::Int		= 480
+  """ number of pixels from left to right """
+  width::Int		= 640
+  """ distortion coefficients up to fifth order """
+  kc::Vector{Float64} = zeros(5)
+  """ 3x3 camera calibration matrix """
+  K::SMatrix{3,3,R}   = SMatrix{3,3}([[height;skew;width/2]';[0.0;height;height/2]';[0.0;0;1]'] )
+  """ inverse of a 3x3 camera calibration matrix """
+  Ki::SMatrix{3,3,R}  = inv(K)
+end
+
+
+CameraCalibration(;
+  width::Int = 640,
+  height::Int= 480,
+  center = [width/2;height/2],
+  focal  = 1.1*[height; height], # just emperical default
+  skew::Real = 0.0,
+  kwargs...
+) = CameraCalibration(;width, height, K=[[focal[1];skew;center[1]]';[0.0;focal[2];center[2]]';[0.0;0;1]'], kwargs... )
+
+
+
 ## FIXME consolidation necessary
 
 ## From yakir12/CameraModels.jl
-struct Pinhole <: CameraModel
+struct Pinhole <: AbstractCameraModel
   # note order of elements has been changed from original source so that inner constructor can be removed.
   columns::Int
   rows::Int
@@ -57,7 +97,7 @@ end
 Data structure for a Camera model with parameters.
 Use `CameraModel(width,height,fc,cc,skew,kc)` for easy construction.
 """
-struct CameraModelandParameters
+struct CameraModelandParameters <: AbstractCameraModel
     width::Int		# image width
     height::Int		# image height
     fc::Vector{Float64}	# focal length in x and y

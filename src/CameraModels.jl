@@ -20,6 +20,9 @@ include("services/CameraServices.jl")
 include("services/RadialDistortion.jl")
 include("services/Utils.jl")
 
+# legacy implementations
+include("Deprecated.jl")
+
 
 
 end # module
