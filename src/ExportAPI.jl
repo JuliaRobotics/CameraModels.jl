@@ -3,6 +3,7 @@
 
 export AbstractCameraModel
 
+export CameraCalibration, CameraCalibrationMutable
 
 export CameraSkewDistortion
 

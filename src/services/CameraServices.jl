@@ -8,11 +8,11 @@
 origin(vector::Vector3) = origin3d
 origin(ray::Ray) = vector.origin
 
-lookdirection(cameramodel::CameraCalibration) = SVector{3}(0,1,0)
-updirection(cameramodel::CameraCalibration) = SVector{3}(0,0,1)
+lookdirection(cameramodel::CameraCalibrationT) = SVector{3}(0,1,0)
+updirection(cameramodel::CameraCalibrationT) = SVector{3}(0,0,1)
 
-width(cameramodel::CameraCalibration) = cameramodel.width
-height(cameramodel::CameraCalibration) = cameramodel.height 
+width(cameramodel::CameraCalibrationT) = cameramodel.width
+height(cameramodel::CameraCalibrationT) = cameramodel.height 
 
 direction(vector::Vector3) = vector
 direction(ray::Ray) = vector.direction
@@ -33,7 +33,7 @@ Return a transformation that converts real-world coordinates
 to camera coordinates. This currently ignores any tangential 
 distortion between the lens and the image plane.
 """
-function point2pixel(model::CameraCalibration, pointincamera::Point3)
+function point2pixel(model::CameraCalibrationT, pointincamera::Point3)
     column = model.prinicipalpoint[1] + model.focallength[1] * pointincamera[1] / pointincamera[2]
     row = model.prinicipalpoint[2] - model.focallength[2] * pointincamera[3] / pointincamera[2]
     return PixelCoordinate(column, row)
@@ -47,7 +47,7 @@ Return a transformation that converts real-world coordinates
 to camera coordinates. This currently ignores any tangential 
 distortion between the lens and the image plane.
 """
-function pixel2ray(model::CameraCalibration, pixelcoordinate::PixelCoordinate)
+function pixel2ray(model::CameraCalibrationT, pixelcoordinate::PixelCoordinate)
     x = (pixelcoordinate[1] - model.prinicipalpoint[1]) / model.focallength[1]
     z = -(pixelcoordinate[2] - model.prinicipalpoint[2]) / model.focallength[2]
     return Vector3(x, 1, z)
@@ -58,17 +58,17 @@ end
 ## From JuliaRobotics/Caesar.jl
 
 
-f_w(pc::PinholeCamera) = pc.K[1,1]
-f_h(pc::PinholeCamera) = pc.K[2,2]
-shear(pc::PinholeCamera) = pc.K[1,2]
-c_w(pc::PinholeCamera) = pc.K[1,3]
-c_h(pc::PinholeCamera) = pc.K[2,3]
+f_w(pc::CameraCalibrationT) = pc.K[1,1]
+f_h(pc::CameraCalibrationT) = pc.K[2,2]
+shear(pc::CameraCalibrationT) = pc.K[1,2]
+c_w(pc::CameraCalibrationT) = pc.K[1,3]
+c_h(pc::CameraCalibrationT) = pc.K[2,3]
 
-set_f_w!(pc::PinholeCamera, val::Real) = (pc.K[1,1] = val)
-set_f_h!(pc::PinholeCamera, val::Real) = (pc.K[2,2] = val)
-set_shear!(pc::PinholeCamera, val::Real) = (pc.K[1,2] = val)
-set_c_w!(pc::PinholeCamera, val::Real) = (pc.K[1,3] = val)
-set_c_h!(pc::PinholeCamera, val::Real) = (pc.K[2,3] = val)
+set_f_w!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,1] = val)
+set_f_h!(pc::CameraCalibrationMutable, val::Real) = (pc.K[2,2] = val)
+set_shear!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,2] = val)
+set_c_w!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,3] = val)
+set_c_h!(pc::CameraCalibrationMutable, val::Real) = (pc.K[2,3] = val)
 
 PinholeCamera(; f_w::Real=300,
                 f_h::Real=f_w,

@@ -11,7 +11,7 @@ CameraModel = (@warn("CameraModels.CameraModel is deprecated, use CameraModels.A
 @deprecate columns(w...;kw...) width(w...;kw...)
 @deprecate rows(w...;kw...) height(w...;kw...)
 
-sensorsize(cameramodel::CameraModel) = SVector{2}(cameramodel.width, cameramodel.height)
+sensorsize(cameramodel::CameraModel) = SVector{2}(width(cameramodel), height(cameramodel))
 
 
 export CameraModelandParameters
@@ -126,7 +126,7 @@ export PinholeCamera
 # end
 
 ## From JuliaRobotics/Caesar.jl
-const PinholeCamera = (@warn("CameraModels.PinholeCamera is deprecated, use CamereModels.CameraCalibration instead."); CameraCalibration)
+const PinholeCamera = (@warn("CameraModels.PinholeCamera is deprecated, use CamereModels.CameraCalibrationMutable instead."); CameraCalibration)
 function PinholeCamera(
     K_::AbstractMatrix=[[510;0;320.0]';[0.0;510;240]';[0.0;0;1]']; # legacy constructor
     K::AbstractMatrix=[[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'],        # consolidated matrix K
@@ -134,10 +134,22 @@ function PinholeCamera(
     height::Int=round(Int, K[2,3]*2),
   )
   #
-  @warn "CameraModels.PinholeCamera is deprecated, use CamereModels.CameraCalibration instead."
-  CameraCalibration(;width,height,K)
+  @warn "CameraModels.PinholeCamera is deprecated, use CamereModels.CameraCalibrationMutable instead."
+  CameraCalibrationMutable(;width,height,K)
 end
 
+
+f_w(pc::PinholeCamera) = pc.K[1,1]
+f_h(pc::PinholeCamera) = pc.K[2,2]
+shear(pc::PinholeCamera) = pc.K[1,2]
+c_w(pc::PinholeCamera) = pc.K[1,3]
+c_h(pc::PinholeCamera) = pc.K[2,3]
+
+set_f_w!(pc::PinholeCamera, val::Real) = (pc.K[1,1] = val)
+set_f_h!(pc::PinholeCamera, val::Real) = (pc.K[2,2] = val)
+set_shear!(pc::PinholeCamera, val::Real) = (pc.K[1,2] = val)
+set_c_w!(pc::PinholeCamera, val::Real) = (pc.K[1,3] = val)
+set_c_h!(pc::PinholeCamera, val::Real) = (pc.K[2,3] = val)
 
 
 export Pinhole
