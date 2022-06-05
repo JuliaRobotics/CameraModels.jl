@@ -12,7 +12,12 @@ Basic Camera Models including pinhole, radial distortion etc.
 |----------------|------------|----------|---------------|
 | [![cms-ci-stb][cms-ci-stb-img]][cms-ci-stb-url] <br> [![version][cms-ver-img]][cms-rel-url] | [![cms-ci-dev-img]][cms-ci-dev-url] | [![cms-cov-img]][cms-cov-url] | [![cjl-slack-badge]][cjl-slack] <br> [![caesar-docs]][cjl-docs-url] |
 
-# TODO List
+# Roadmap
+
+Project organization is currently done here:
+- [https://github.com/orgs/JuliaRobotics/projects/9/views/1](https://github.com/orgs/JuliaRobotics/projects/9/views/1)
+
+## TODO List
 
 - [x] Copy existing camera code from Caesar.jl and RoME.jl here,
 - [x] Functional tests for consolidated CameraCalibration type
@@ -23,8 +28,6 @@ Basic Camera Models including pinhole, radial distortion etc.
 - [ ] Homogeneous coordinates model,
 - [ ] ...
 
-
-## History
 
 ### v0.1.0
 
