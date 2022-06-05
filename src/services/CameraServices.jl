@@ -1,5 +1,5 @@
 
-## FIXME consolidation necessary
+## consolidated functions, first baseline
 
 ## =========================================================================================
 ## Parameter functions
@@ -102,10 +102,6 @@ end
 
 
 
-
-
-
-
 """
     point2pixel(model::Pinhole, pointincamera::$(Point3))
 
@@ -132,7 +128,6 @@ function pixel2ray(model::CameraCalibrationT, pixelcoordinate::PixelCoordinate)
     z = -(pixelcoordinate[2] - model.prinicipalpoint[2]) / model.focallength[2]
     return Vector3(x, 1, z)
 end
-
 
 
 ## From JuliaRobotics/SensorFeatureTracking.jl
@@ -169,7 +164,7 @@ end
 
 
 
-  ## =========================================================================================
+## =========================================================================================
 ## ======================================================================================
 
 
