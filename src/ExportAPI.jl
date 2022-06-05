@@ -2,10 +2,9 @@
 
 
 export AbstractCameraModel
-export CameraModel
 
-export PinholeCamera
-export Pinhole
+export CameraCalibrationT, CameraCalibration, CameraCalibrationMutable
+
 export CameraSkewDistortion
 
 export RadialDistortion
