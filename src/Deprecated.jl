@@ -1,11 +1,20 @@
 
 
+
+
 ## ================================================================================================
 ## consolidated types below
 
 export CameraModel # being replaced by AbstractCameraModel
 CameraModel = (@warn("CameraModels.CameraModel is deprecated, use CameraModels.AbstractCameraModel instead");AbstractCameraModel)
 # abstract type CameraModel end 
+
+@warn "RadialDistortion is deprecated, use CameraCalibration instead"
+# Base.@kwdef struct RadialDistortion{N, R <: Real, K <: AbstractVector}
+#   Ki::SVector{N,R} = SVector(0.0) # 
+#   center::SVector{2,R} = SVector{2,R}(0.0,0.0) # SVector{2,R} # [h,w]
+#   # _radius2::Matrix{R} # perhaps SizedArray{R,2} or StaticArray{R,2} or GPUArray{R,2} depending on performance
+# end
 
 
 @deprecate columns(w...;kw...) width(w...;kw...)
@@ -198,9 +207,17 @@ function CameraIntrinsic(
 end
 
 
+
+
+
+## ===========================================================================
+## Legacy types that are not so easy to consolidate (not exported) DO NOT USE
+## ===========================================================================
+
+
 # Camera extrinsic must be world in camera frame (cRw)
 Base.@kwdef struct CameraExtrinsic{T <: Real}
-  R::Rot_.RotMatrix{T} = id = one(Rot_.RotMatrix{3, Float64})
+  R::SMatrix{3,3,T} = id = one(Rot_.RotMatrix{3, Float64}).mat
   t::Vector{T} = zeros(3)
 end
 
@@ -208,6 +225,8 @@ Base.@kwdef struct CameraModelFull
   ci::CameraIntrinsic = CameraIntrinsic()
   ce::CameraExtrinsic = CameraExtrinsic()
 end
+
+
 
 
 #

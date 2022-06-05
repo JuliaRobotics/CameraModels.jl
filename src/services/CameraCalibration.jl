@@ -40,3 +40,5 @@ function CameraCalibrationMutable(img::AbstractMatrix{T}) where T
   @info "Assuming default CameraCalibrationMutable from image $(size(img)):" f_w f_h c_w c_h
   CameraCalibrationMutable(;width, height, focal=[f_w, f_h], center=[c_w, c_h])
 end
+
+
