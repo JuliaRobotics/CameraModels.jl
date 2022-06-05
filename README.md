@@ -1,7 +1,7 @@
 
 # NOTICE
 
-This package is meant to consolidate the camera models previously found in the Julia package ecosystem.  There are still many gaps, and community contributions encouranged.
+This package is meant to consolidate the camera models previously found in the Julia package ecosystem.  There are still many gaps and community contributions are encouranged.
 
 # CameraModels.jl
 Basic Camera Models including pinhole, radial distortion etc.
