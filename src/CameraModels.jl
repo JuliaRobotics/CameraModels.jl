@@ -12,7 +12,6 @@ include("ExportAPI.jl")
 # data types
 include("entities/GeneralTypes.jl")
 include("entities/CameraCalibration.jl")
-include("entities/RadialDistortion.jl")
 
 include("services/CameraCalibration.jl")
 
@@ -22,7 +21,6 @@ include("Deprecated.jl")
 # function logic
 include("services/Prototypes.jl")
 include("services/CameraServices.jl")
-include("services/RadialDistortion.jl")
 include("services/Utils.jl")
 
 
