@@ -70,63 +70,37 @@ set_shear!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,2] = val)
 set_c_w!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,3] = val)
 set_c_h!(pc::CameraCalibrationMutable, val::Real) = (pc.K[2,3] = val)
 
-PinholeCamera(; f_w::Real=300,
-                f_h::Real=f_w,
-                c_w::R=320.0,
-                c_h::Real=240,
-                shear::Real=0) where {R <: Real} = SMatrix{3,3,R}([f_w shear c_w;
-                                                                    0   f_h  c_h;
-                                                                    0     0    1])
-#
-
-"""
-    $SIGNATURES
-
-Constructor helper assuming you just have a camera image and need to start somewhere for a basic camera model.
-
-Notes:
-- Calibration will incorrect but hopefully in a distant ballpark to get the calibration process started.
-- See [AprilTags.jl Calibration section](https://juliarobotics.org/AprilTags.jl/latest/#Camera-Calibration-1) for code and help. 
-"""
-function PinholeCamera(img::AbstractArray{T,2}) where T
-  f_w, c_w, c_h = size(img, 1), size(img, 2)/2, size(img, 1)/2
-  f_h = f_w
-  @info "Assuming default PinholeCamera from image $(size(img)):" f_w f_h c_w c_h
-  PinholeCamera(f_w=f_w, f_h=f_h, c_w=c_w, c_h=c_h)
-end
-
-
 
 
 ## ======================================================================================
 ## From JuliaRobotics/SensorFeatureTracking.jl
 
-function project!(ret::Vector{Float64}, ci::CameraIntrinsic, ce::CameraExtrinsic, pt::Vector{Float64})
-    res = ci.K*(ce.R*pt + ce.t)
-    ret[1:2] = res[1:2]./res[3]
-    nothing
-  end
-  project!(ret::Vector{Float64}, cm::CameraModelFull, pt::Vector{Float64}) = project!(ret, cm.ci, cm.ce, pt)
-  function project(cm::CameraModelFull, pt::Vector{Float64})
-    res = Vector{Float64}(2)
-    project!(res, cm, pt)
-    return res
-  end
+# function project!(ret::Vector{Float64}, ci::CameraIntrinsic, ce::CameraExtrinsic, pt::Vector{Float64})
+#     res = ci.K*(ce.R*pt + ce.t)
+#     ret[1:2] = res[1:2]./res[3]
+#     nothing
+#   end
+#   project!(ret::Vector{Float64}, cm::CameraModelFull, pt::Vector{Float64}) = project!(ret, cm.ci, cm.ce, pt)
+#   function project(cm::CameraModelFull, pt::Vector{Float64})
+#     res = Vector{Float64}(2)
+#     project!(res, cm, pt)
+#     return res
+#   end
   
-  # pinhole camera model
-  # (x, y)/f = (X, Y)/Z
-  function cameraResidual!(
-        res::Vector{Float64},
-        z::Vector{Float64},
-        ci::CameraIntrinsic,
-        ce::CameraExtrinsic,
-        pt::Vector{Float64}  )
-    # in place memory operations
-    project!(res, ci, ce, pt)
-    res[1:2] .*= -1.0
-    res[1:2] += z[1:2]
-    nothing
-  end
+#   # pinhole camera model
+#   # (x, y)/f = (X, Y)/Z
+#   function cameraResidual!(
+#         res::Vector{Float64},
+#         z::Vector{Float64},
+#         ci::CameraIntrinsic,
+#         ce::CameraExtrinsic,
+#         pt::Vector{Float64}  )
+#     # in place memory operations
+#     project!(res, ci, ce, pt)
+#     res[1:2] .*= -1.0
+#     res[1:2] += z[1:2]
+#     nothing
+#   end
 
 
 

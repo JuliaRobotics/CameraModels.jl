@@ -58,7 +58,7 @@ mutable struct CameraCalibrationMutable{R <: Real,N} <: AbstractCameraModel
   """ number of pixels from left to right """
   width::Int		# = 640
   """ distortion coefficients up to fifth order """
-  kc::MVector{R,N} # = zeros(5)
+  kc::MVector{N,R} # = zeros(5)
   """ 3x3 camera calibration matrix """
   K::MMatrix{3,3,R}   # = SMatrix{3,3}([[height;0.0;width/2]';[0.0;height;height/2]';[0.0;0;1]'] )
   """ inverse of a 3x3 camera calibration matrix """

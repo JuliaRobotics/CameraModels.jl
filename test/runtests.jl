@@ -6,7 +6,6 @@ import CameraModels: height, width
 
 struct SomeTestModel <: CameraModels.AbstractCameraModel end
 
-# supposed to override through dispatch???
 CameraModels.height(m::SomeTestModel) = 11
 CameraModels.width(m::SomeTestModel) = 22
 

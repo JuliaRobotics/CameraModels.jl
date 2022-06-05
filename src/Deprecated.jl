@@ -67,39 +67,6 @@ end
 # end
 
 
-export CameraIntrinsic
-
-# Base.@kwdef struct CameraIntrinsic
-#   K::Array{Float64,2}
-# end
-# CameraIntrinsic(;x0=320.0,y0=240.0,fx=510.0,fy=510.0,s=0.0) = CameraIntrinsic([[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'])
-
-## From JuliaRobotics/Caesar.jl
-const CameraIntrinsic = (@warn("CameraModels.CameraIntrinsic is deprecated, use CamereModels.CameraCalibration instead.");CameraCalibration)
-function CameraIntrinsic(
-    K_::AbstractMatrix=[[510;0;320.0]';[0.0;510;240]';[0.0;0;1]']; # legacy constructor
-    x0=320.0,y0=240.0,fx=510.0,fy=510.0,s=0.0,                     # legacy function support
-    K::AbstractMatrix=[[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'],        # consolidated matrix K
-    width::Int=round(Int, K[1,3]*2), 
-    height::Int=round(Int, K[2,3]*2),
-  )
-  #
-  @warn "CameraModels.CameraIntrinsic is deprecated, use CamereModels.CameraCalibration instead."
-  CameraCalibration(;width,height,K)
-end
-
-
-# Camera extrinsic must be world in camera frame (cRw)
-Base.@kwdef struct CameraExtrinsic{T <: Real}
-  R::Rot_.RotMatrix{T} = id = one(Rot_.RotMatrix{3, Float64})
-  t::Vector{T} = zeros(3)
-end
-
-Base.@kwdef struct CameraModelFull
-  ci::CameraIntrinsic = CameraIntrinsic()
-  ce::CameraExtrinsic = CameraExtrinsic()
-end
-
 
 export PinholeCamera
 
@@ -127,16 +94,36 @@ export PinholeCamera
 
 ## From JuliaRobotics/Caesar.jl
 const PinholeCamera = (@warn("CameraModels.PinholeCamera is deprecated, use CamereModels.CameraCalibrationMutable instead."); CameraCalibration)
+
 function PinholeCamera(
     K_::AbstractMatrix=[[510;0;320.0]';[0.0;510;240]';[0.0;0;1]']; # legacy constructor
-    K::AbstractMatrix=[[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'],        # consolidated matrix K
-    width::Int=round(Int, K[1,3]*2), 
-    height::Int=round(Int, K[2,3]*2),
+    width::Int=round(Int, K_[1,3]*2), 
+    height::Int=round(Int, K_[2,3]*2),
+    f_w::Real=K_[1,1],
+    f_h::Real=K_[2,2],
+    c_w::Real=K_[1,3],
+    c_h::Real=K_[2,3],
+    shear::Real=K_[1,2],
+    K::AbstractMatrix=[[f_w;shear;c_w]';[0.0;f_h;c_h]';[0.0;0;1]'],        # consolidated matrix K
   )
   #
   @warn "CameraModels.PinholeCamera is deprecated, use CamereModels.CameraCalibrationMutable instead."
+  if 3 < size(K_,1)
+    @warn "PinholeCamera(arg), 3 < size(arg,1), assuming legacy constructor as img as input argument."
+    return CameraCalibrationMutable(K_) # as though img=K_
+  end
   CameraCalibrationMutable(;width,height,K)
 end
+
+
+# @deprecate PinholeCamera(img::AbstractMatrix) CameraCalibrationMutable(img)
+
+# function PinholeCamera(img::AbstractMatrix{T}) where T
+#   f_w, c_w, c_h = size(img, 1), size(img, 2)/2, size(img, 1)/2
+#   f_h = f_w
+#   @info "Assuming default PinholeCamera from image $(size(img)):" f_w f_h c_w c_h
+#   PinholeCamera(;f_w, f_h, c_w, c_h)
+# end
 
 
 f_w(pc::PinholeCamera) = pc.K[1,1]
@@ -186,6 +173,41 @@ end
 #   focallength::Vector2             # in pixels
 # end
 
+
+
+export CameraIntrinsic
+
+# Base.@kwdef struct CameraIntrinsic
+#   K::Array{Float64,2}
+# end
+# CameraIntrinsic(;x0=320.0,y0=240.0,fx=510.0,fy=510.0,s=0.0) = CameraIntrinsic([[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'])
+
+## From JuliaRobotics/Caesar.jl
+const CameraIntrinsic = (@warn("CameraModels.CameraIntrinsic is deprecated, use CamereModels.CameraCalibration instead.");CameraCalibration)
+
+function CameraIntrinsic(
+    K_::AbstractMatrix=[[510;0;320.0]';[0.0;510;240]';[0.0;0;1]']; # legacy constructor
+    x0=320.0,y0=240.0,fx=510.0,fy=510.0,s=0.0,                     # legacy function support
+    K::AbstractMatrix=[[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'],        # consolidated matrix K
+    width::Int=round(Int, K[1,3]*2), 
+    height::Int=round(Int, K[2,3]*2),
+  )
+  #
+  @warn "CameraModels.CameraIntrinsic is deprecated, use CamereModels.CameraCalibration instead."
+  CameraCalibration(;width,height,K)
+end
+
+
+# Camera extrinsic must be world in camera frame (cRw)
+Base.@kwdef struct CameraExtrinsic{T <: Real}
+  R::Rot_.RotMatrix{T} = id = one(Rot_.RotMatrix{3, Float64})
+  t::Vector{T} = zeros(3)
+end
+
+Base.@kwdef struct CameraModelFull
+  ci::CameraIntrinsic = CameraIntrinsic()
+  ce::CameraExtrinsic = CameraExtrinsic()
+end
 
 
 #
