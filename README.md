@@ -4,12 +4,39 @@
 This package is still in development.
 
 # CameraModels.jl
-Basic Camera Models including pinhole, radial distortion and more.
+Basic Camera Models including pinhole, radial distortion etc.
+
+> Click on badges to follow links:
+
+| Stable Release | Dev branch | Coverage | Documentation |
+|----------------|------------|----------|---------------|
+| [![cms-ci-stb][cms-ci-stb-img]][cms-ci-stb-url] <br> [![version][cms-ver-img]][cms-rel-url] | [![cms-ci-dev-img]][cms-ci-dev-url] | [![cms-cov-img]][cms-cov-url] | [![cjl-slack-badge]][cjl-slack] <br> [![caesar-docs]][cjl-docs-url] |
 
 # TODO List
 
 - [x] Copy existing camera code from Caesar.jl and RoME.jl here,
-- [ ] Tests for pinhole camera model,
+- [x] Functional tests for consolidated CameraCalibration type
+- [x] Implement radial distortion computations,
+- [ ] Numerical tests for pinhole camera model,
+- [ ] Integrate downstream with packages like AprilTags.jl and Caesar.jl
 - [ ] Tests for radial distortion model,
 - [ ] Homogeneous coordinates model,
 - [ ] ...
+
+
+
+[cms-ci-dev-img]: https://github.com/JuliaRobotics/CameraModels.jl/actions/workflows/ci.yml/badge.svg
+[cms-ci-dev-url]: https://github.com/JuliaRobotics/CameraModels.jl/actions/workflows/ci.yml
+[cms-ci-stb-img]: https://github.com/JuliaRobotics/CameraModels.jl/actions/workflows/ci.yml/badge.svg?branch=release%2Fv0.26
+[cms-ci-stb-url]: https://github.com/JuliaRobotics/CameraModels.jl/actions/workflows/ci.yml
+[cms-ver-img]: https://juliahub.com/docs/CameraModels/version.svg
+[cms-rel-url]: https://github.com/JuliaRobotics/CameraModels.jl/releases
+[cms-milestones]: https://github.com/JuliaRobotics/CameraModels.jl/milestones
+[cms-cov-img]: https://codecov.io/github/JuliaRobotics/CameraModels.jl/coverage.svg?branch=master
+[cms-cov-url]: https://codecov.io/github/JuliaRobotics/CameraModels.jl?branch=master
+
+[caesar-docs]: https://img.shields.io/badge/CaesarDocs-latest-blue.svg
+[cjl-docs-url]: http://juliarobotics.github.io/Caesar.jl/latest/
+
+[cjl-slack-badge]: https://img.shields.io/badge/Caesarjl-Slack-green.svg?style=popout
+[cjl-slack]: https://join.slack.com/t/caesarjl/shared_invite/zt-ucs06bwg-y2tEbddwX1vR18MASnOLsw
