@@ -4,6 +4,28 @@
 ## =========================================================================================
 ## From yakir12/CameraModels.jl
 
+
+origin(vector::Vector3) = origin3d
+origin(ray::Ray) = vector.origin
+
+lookdirection(cameramodel::CameraCalibration) = SVector{3}(0,1,0)
+updirection(cameramodel::CameraCalibration) = SVector{3}(0,0,1)
+
+width(cameramodel::CameraCalibration) = cameramodel.width
+height(cameramodel::CameraCalibration) = cameramodel.height 
+
+direction(vector::Vector3) = vector
+direction(ray::Ray) = vector.direction
+
+sensorsize(cameramodel::AbstractCameraModel) = SVector{2}(width(cameramodel), height(cameramodel))
+
+"""
+    canreproject(camera::CameraModel)
+
+Confirms if point2pixel is implemented for this camera model.
+"""
+canreproject(camera::AbstractCameraModel) = true
+
 """
     point2pixel(model::Pinhole, pointincamera::$(Point3))
 
@@ -11,11 +33,12 @@ Return a transformation that converts real-world coordinates
 to camera coordinates. This currently ignores any tangential 
 distortion between the lens and the image plane.
 """
-function point2pixel(model::Pinhole, pointincamera::Point3)
+function point2pixel(model::CameraCalibration, pointincamera::Point3)
     column = model.prinicipalpoint[1] + model.focallength[1] * pointincamera[1] / pointincamera[2]
     row = model.prinicipalpoint[2] - model.focallength[2] * pointincamera[3] / pointincamera[2]
     return PixelCoordinate(column, row)
 end
+
 
 """
     pixel2ray(model::Pinhole, pixelcoordinate::$(PixelCoordinate))
@@ -24,17 +47,11 @@ Return a transformation that converts real-world coordinates
 to camera coordinates. This currently ignores any tangential 
 distortion between the lens and the image plane.
 """
-function pixel2ray(model::Pinhole, pixelcoordinate::PixelCoordinate)
+function pixel2ray(model::CameraCalibration, pixelcoordinate::PixelCoordinate)
     x = (pixelcoordinate[1] - model.prinicipalpoint[1]) / model.focallength[1]
     z = -(pixelcoordinate[2] - model.prinicipalpoint[2]) / model.focallength[2]
     return Vector3(x, 1, z)
 end
-
-lookdirection(cameramodel::Pinhole) = SVector{3}(0,1,0)
-updirection(cameramodel::Pinhole) = SVector{3}(0,0,1)
-
-columns(cameramodel::Pinhole) = cameramodel.columns
-rows(cameramodel::Pinhole) = cameramodel.rows 
 
 
 ## =========================================================================================

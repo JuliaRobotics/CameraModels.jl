@@ -8,6 +8,12 @@ CameraModel = (@warn("CameraModels.CameraModel is deprecated, use CameraModels.A
 # abstract type CameraModel end 
 
 
+@deprecate columns(w...;kw...) width(w...;kw...)
+@deprecate rows(w...;kw...) height(w...;kw...)
+
+sensorsize(cameramodel::CameraModel) = SVector{2}(cameramodel.width, cameramodel.height)
+
+
 export CameraModelandParameters
 const CameraModelandParameters = (@warn("CameraModels.CameraModelandParameters is deprecated, use CamereModels.CameraCalibration instead.");CameraCalibration)
 
@@ -36,7 +42,7 @@ function Base.getproperty(x::CameraModelandParameters, f::Symbol)
     getfield(x, :height)
   elseif f == :prinicipalpoint || f == :cc
     SA[(getfield(x, :K)[1:2, 3])...]
-  elseif f == :focallength || fc == :fc
+  elseif f == :focallength || f == :fc
     K = getfield(x, :K)
     SA[K[1,1];K[2,2]] 
   else
