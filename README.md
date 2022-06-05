@@ -23,6 +23,7 @@ Project organization is currently done here:
 - [x] Functional tests for consolidated CameraCalibration type
 - [x] Implement radial distortion computations,
 - [ ] Numerical tests for pinhole camera model,
+- [ ] Improve documentation,
 - [ ] Integrate downstream with packages like AprilTags.jl and Caesar.jl
 - [ ] Tests for radial distortion model,
 - [ ] Homogeneous coordinates model,
