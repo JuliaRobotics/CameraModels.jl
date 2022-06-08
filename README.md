@@ -37,13 +37,13 @@ See NEWS.md.
 
 [cms-ci-dev-img]: https://github.com/JuliaRobotics/CameraModels.jl/actions/workflows/ci.yml/badge.svg
 [cms-ci-dev-url]: https://github.com/JuliaRobotics/CameraModels.jl/actions/workflows/ci.yml
-[cms-ci-stb-img]: https://github.com/JuliaRobotics/CameraModels.jl/actions/workflows/ci.yml/badge.svg?branch=release%2Fv0.26
+[cms-ci-stb-img]: https://github.com/JuliaRobotics/CameraModels.jl/actions/workflows/ci.yml/badge.svg?branch=release%2Fv0.1
 [cms-ci-stb-url]: https://github.com/JuliaRobotics/CameraModels.jl/actions/workflows/ci.yml
 [cms-ver-img]: https://juliahub.com/docs/CameraModels/version.svg
 [cms-rel-url]: https://github.com/JuliaRobotics/CameraModels.jl/releases
 [cms-milestones]: https://github.com/JuliaRobotics/CameraModels.jl/milestones
-[cms-cov-img]: https://codecov.io/github/JuliaRobotics/CameraModels.jl/coverage.svg?branch=master
-[cms-cov-url]: https://codecov.io/github/JuliaRobotics/CameraModels.jl?branch=master
+[cms-cov-img]: https://codecov.io/github/JuliaRobotics/CameraModels.jl/coverage.svg?branch=main
+[cms-cov-url]: https://codecov.io/github/JuliaRobotics/CameraModels.jl?branch=main
 
 [caesar-docs]: https://img.shields.io/badge/CaesarDocs-latest-blue.svg
 [cjl-docs-url]: http://juliarobotics.github.io/Caesar.jl/latest/
