@@ -5,6 +5,39 @@
 ## ================================================================================================
 ## consolidated types below
 
+
+@deprecate point2pixel(w...) project(w...)
+@deprecate pixel2ray(w...) backproject(w...)
+
+
+# """
+#     point2pixel(model::Pinhole, pointincamera::$(Point3))
+
+# Return a transformation that converts real-world coordinates
+# to camera coordinates. This currently ignores any tangential 
+# distortion between the lens and the image plane.
+# """
+# function point2pixel(model::CameraCalibrationT, pointincamera::Point3)
+#     column = model.prinicipalpoint[1] + model.focallength[1] * pointincamera[1] / pointincamera[2]
+#     row = model.prinicipalpoint[2] - model.focallength[2] * pointincamera[3] / pointincamera[2]
+#     return PixelCoordinate(column, row)
+# end
+
+
+# """
+#     pixel2ray(model::Pinhole, pixelcoordinate::$(PixelCoordinate))
+
+# Return a transformation that converts real-world coordinates
+# to camera coordinates. This currently ignores any tangential 
+# distortion between the lens and the image plane.
+# """
+# function pixel2ray(model::CameraCalibrationT, pixelcoordinate::PixelCoordinate)
+#     x = (pixelcoordinate[1] - model.prinicipalpoint[1]) / model.focallength[1]
+#     z = -(pixelcoordinate[2] - model.prinicipalpoint[2]) / model.focallength[2]
+#     return Vector3(x, 1, z)
+# end
+
+
 export CameraModel # being replaced by AbstractCameraModel
 CameraModel = (@warn("CameraModels.CameraModel is deprecated, use CameraModels.AbstractCameraModel instead");AbstractCameraModel)
 # abstract type CameraModel end 

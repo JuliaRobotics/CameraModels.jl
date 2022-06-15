@@ -77,7 +77,7 @@ DevNotes (Contributions welcome):
 - TODO buffer radii matrix for better reuse on repeat image size sequences
 - TODO dispatch with either CUDA.jl or AMDGPU.jl <:AbstractArray objects.
 - TODO use Tullio.jl with multithreading and GPU
-- TODO make sure LoopVectorization.jl tools like `@avx` is working
+- TODO check if LoopVectorization.jl tools like `@avx` help performance
 """
 function radialDistortion!(cc::CameraCalibration{R,N}, dest::AbstractMatrix, src::AbstractMatrix) where {R<:Real,N}
   # loop over entire image
@@ -102,32 +102,65 @@ end
 
 
 
+## 
+
+
 """
-    point2pixel(model::Pinhole, pointincamera::$(Point3))
+    $SIGNATURES
+
+Project a world scene onto an image.
 
 Return a transformation that converts real-world coordinates
 to camera coordinates. This currently ignores any tangential 
 distortion between the lens and the image plane.
 """
-function point2pixel(model::CameraCalibrationT, pointincamera::Point3)
-    column = model.prinicipalpoint[1] + model.focallength[1] * pointincamera[1] / pointincamera[2]
-    row = model.prinicipalpoint[2] - model.focallength[2] * pointincamera[3] / pointincamera[2]
-    return PixelCoordinate(column, row)
+function project(
+    model::CameraCalibrationT,
+    pointincamera::Union{<:AbstractVector{<:Real}, <:Point3}
+  )
+  #
+  column = model.prinicipalpoint[1] + model.focallength[1] * pointincamera[1] / pointincamera[2]
+  row = model.prinicipalpoint[2] - model.focallength[2] * pointincamera[3] / pointincamera[2]
+  return PixelCoordinate(column, row)
 end
+## homogeneous point coords xyzw (stereo cameras)
+# # left cam
+# fz = _f / z
+# u = x * fz + center[1]
+# v = y * fz + center[2]
+# # right cam
+# u2 = (x - w*baseline) * fz + center[1]
+# # infront or behind
+# valid = (w==0&&z>0) || (z/w) > 0 
+
 
 
 """
-    pixel2ray(model::Pinhole, pixelcoordinate::$(PixelCoordinate))
+    $SIGNATURES
+
+Backproject from an image into a world scene.
 
 Return a transformation that converts real-world coordinates
 to camera coordinates. This currently ignores any tangential 
 distortion between the lens and the image plane.
 """
-function pixel2ray(model::CameraCalibrationT, pixelcoordinate::PixelCoordinate)
-    x = (pixelcoordinate[1] - model.prinicipalpoint[1]) / model.focallength[1]
-    z = -(pixelcoordinate[2] - model.prinicipalpoint[2]) / model.focallength[2]
-    return Vector3(x, 1, z)
+function backproject(
+    model::CameraCalibrationT, 
+    pixelcoordinate::Union{<:AbstractVector{<:Real}, <:PixelCoordinate}
+  )
+  #
+  x =  (pixelcoordinate[1] - model.prinicipalpoint[1]) / model.focallength[1]
+  z = -(pixelcoordinate[2] - model.prinicipalpoint[2]) / model.focallength[2]
+  return Vector3(x, 1, z)
 end
+# # camera measurements (u,v), (u2,v)
+# lx = (u-center[1])*baseline
+# ly = (v-center[2])*baseline
+# lz = _f*baseline
+# lw = u - u2
+# lw<0 ? @warn("backprojecting negative disparity\n") : nothing
+# # homogeneous point coords
+# return (lz, lx, ly, lw)
 
 
 ## From JuliaRobotics/SensorFeatureTracking.jl
@@ -149,11 +182,12 @@ end
 # pinhole camera model
 # (x, y)/f = (X, Y)/Z
 function cameraResidual!(
-      res::AbstractVector{<:Real},
-      z::AbstractVector{<:Real},
-      ci::CameraIntrinsic,
-      ce::CameraExtrinsic,
-      pt::AbstractVector{<:Real}  )
+    res::AbstractVector{<:Real},
+    z::AbstractVector{<:Real},
+    ci::CameraIntrinsic,
+    ce::CameraExtrinsic,
+    pt::AbstractVector{<:Real}  
+  )
   # in place memory operations
   project!(res, ci, ce, pt)
   res[1:2] .*= -1.0
@@ -165,7 +199,7 @@ end
 
 
 ## =========================================================================================
-## ======================================================================================
+## =========================================================================================
 
 
 
