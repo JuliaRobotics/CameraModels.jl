@@ -32,12 +32,11 @@ Notes:
 """
 function CameraCalibrationMutable(img::AbstractMatrix{T}) where T
   height, width = size(img)
-  @warn "HERE" height width
   # emperical assumption usually seen for focal length
   f_w = 1.1*height
   f_h = f_w
   c_w, c_h = width/2, height/2
-  @info "Assuming default CameraCalibrationMutable from image $(size(img)):" f_w f_h c_w c_h
+  @info "Assuming default CameraCalibrationMutable from image size(img)=(rows,cols)=$(size(img)):" f_w f_h c_w c_h
   CameraCalibrationMutable(;width, height, focal=[f_w, f_h], center=[c_w, c_h])
 end
 

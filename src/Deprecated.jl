@@ -6,8 +6,8 @@
 ## consolidated types below
 
 
-@deprecate point2pixel(w...) project(w...)
-@deprecate pixel2ray(w...) backproject(w...)
+@deprecate point2pixel(model, pt) project(model, pt[[1;3;2]])
+@deprecate pixel2ray(model, px) backproject(model, px)[[1;3;2]]
 
 
 # """

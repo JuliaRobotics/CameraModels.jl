@@ -5,13 +5,13 @@
 ## Parameter functions
 
 ## From yakir12/CameraModels.jl
-origin(vector::Vector3) = origin3d
+origin(vector::Union{<:AbstractVector{<:Real},<:Vector3}) = origin3d
 origin(ray::Ray) = vector.origin
 lookdirection(cameramodel::CameraCalibrationT) = SVector{3}(0,1,0)
 updirection(cameramodel::CameraCalibrationT) = SVector{3}(0,0,1)
 width(cameramodel::CameraCalibrationT) = cameramodel.width
 height(cameramodel::CameraCalibrationT) = cameramodel.height 
-direction(vector::Vector3) = vector
+direction(vector::Union{<:AbstractVector{<:Real},<:Vector3}) = vector
 direction(ray::Ray) = vector.direction
 sensorsize(cameramodel::AbstractCameraModel) = SVector{2}(width(cameramodel), height(cameramodel))
 
@@ -113,14 +113,22 @@ Project a world scene onto an image.
 Return a transformation that converts real-world coordinates
 to camera coordinates. This currently ignores any tangential 
 distortion between the lens and the image plane.
+
+Notes
+- `pointincamera` is camera's reference frame.
+
+Deprecates:
+- yakir12: `point2pixel`
+
+Also see: [`backproject`](@ref)
 """
 function project(
     model::CameraCalibrationT,
     pointincamera::Union{<:AbstractVector{<:Real}, <:Point3}
   )
   #
-  column = model.prinicipalpoint[1] + model.focallength[1] * pointincamera[1] / pointincamera[2]
-  row = model.prinicipalpoint[2] - model.focallength[2] * pointincamera[3] / pointincamera[2]
+  column = c_w(model) + f_w(model) * pointincamera[1] / pointincamera[3]
+  row = c_h(model) - f_h(model) * pointincamera[2] / pointincamera[3]
   return PixelCoordinate(column, row)
 end
 ## homogeneous point coords xyzw (stereo cameras)
@@ -131,7 +139,7 @@ end
 # # right cam
 # u2 = (x - w*baseline) * fz + center[1]
 # # infront or behind
-# valid = (w==0&&z>0) || (z/w) > 0 
+# valid = (w==0&&0<z) || 0 < (z/w) 
 
 
 
@@ -143,15 +151,20 @@ Backproject from an image into a world scene.
 Return a transformation that converts real-world coordinates
 to camera coordinates. This currently ignores any tangential 
 distortion between the lens and the image plane.
+
+Deprecates:
+- yakir12: `pixel2ray`
+
+Also see: [`project`](@ref)
 """
 function backproject(
     model::CameraCalibrationT, 
-    pixelcoordinate::Union{<:AbstractVector{<:Real}, <:PixelCoordinate}
+    px_coord::Union{<:AbstractVector{<:Real}, <:PixelCoordinate}
   )
   #
-  x =  (pixelcoordinate[1] - model.prinicipalpoint[1]) / model.focallength[1]
-  z = -(pixelcoordinate[2] - model.prinicipalpoint[2]) / model.focallength[2]
-  return Vector3(x, 1, z)
+  x =  (px_coord[1] - c_w(model)) / f_w(model)
+  y = -(px_coord[2] - c_h(model)) / f_h(model)
+  return Vector3(x, y, 1)
 end
 # # camera measurements (u,v), (u2,v)
 # lx = (u-center[1])*baseline
