@@ -12,6 +12,11 @@ Basic Camera Models including pinhole, radial distortion etc.
 |----------------|------------|----------|---------------|
 | [![cms-ci-stb][cms-ci-stb-img]][cms-ci-stb-url] <br> [![version][cms-ver-img]][cms-rel-url] | [![cms-ci-dev-img]][cms-ci-dev-url] | [![cms-cov-img]][cms-cov-url] | [![cjl-slack-badge]][cjl-slack] <br> [![caesar-docs]][cjl-docs-url] |
 
+# JuliaRobotics/CameraModels.jl Image Convention
+
+The image convention is intended to be the best compromize between [JuliaImages's unified Array stack](https://github.com/JuliaImages/Images.jl), and established OpenCV conventions.  Also see [Augmentor.jl's Images description](https://evizero.github.io/Augmentor.jl/stable/images/#Working-with-Images-in-Julia), and open issues to help resolve miscommunication or convention issues.  The following figure is hosted in this repo, with raw image for easy update via [Excalidraw.com](docs/imgs/JuliaRoboticsImgConv.excalidraw).
+
+![Images Convention](docs/imgs/JuliaRoboticsImgConv.png)
 # Roadmap
 
 Project organization is currently done here:
