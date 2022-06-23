@@ -12,6 +12,11 @@ Basic Camera Models including pinhole, radial distortion etc.
 |----------------|------------|----------|---------------|
 | [![cms-ci-stb][cms-ci-stb-img]][cms-ci-stb-url] <br> [![version][cms-ver-img]][cms-rel-url] | [![cms-ci-dev-img]][cms-ci-dev-url] | [![cms-cov-img]][cms-cov-url] | [![cjl-slack-badge]][cjl-slack] <br> [![caesar-docs]][cjl-docs-url] |
 
+# JuliaRobotics/CameraModels.jl Image Convention
+
+The image convention is intended to be the best compromise between [JuliaImages's unified Array stack](https://github.com/JuliaImages/Images.jl), and established [OpenCV](https://opencv.org/) conventions.  Also see [Augmentor.jl's Images description](https://evizero.github.io/Augmentor.jl/stable/images/#Working-with-Images-in-Julia), and open issues to help resolve miscommunication or convention issues.  The following figure is hosted in this repo, with raw image for easy update via [Excalidraw.com](docs/imgs/JuliaRoboticsImgConv.excalidraw).
+
+![Images Convention](docs/imgs/JuliaRoboticsImgConv.png)
 # Roadmap
 
 Project organization is currently done here:
@@ -23,6 +28,7 @@ Project organization is currently done here:
 - [x] Functional tests for consolidated CameraCalibration type
 - [x] Implement radial distortion computations,
 - [ ] Numerical tests for pinhole camera model,
+- [ ] Homography point projections in 2D,
 - [ ] Improve documentation,
 - [ ] Integrate downstream with packages like AprilTags.jl and Caesar.jl
 - [ ] Tests for radial distortion model,

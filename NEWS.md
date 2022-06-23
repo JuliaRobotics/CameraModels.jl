@@ -10,3 +10,5 @@
 - Backward compatibility and deprecations for CameraModelandParameters.
 - Work in progress to consolidate CameraModelFull from JuliaRobotics, but some hangups on where to put CameraExtrinsics.
 - Implement but not fully wired up to projections of `radialDistorion` functionality.
+- Deprecate `point2pixel(model, pt)`, use `project(model, pt[[1;3;2]])` instead.
+- Deprecate `pixel2ray(model, px)`, use `backproject(model, px)[[1;3;2]]` instead.
