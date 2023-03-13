@@ -1,5 +1,20 @@
 
 
+function intersectPlaneLine(
+    planenorm::AbstractVector{<:Real}, 
+    planepnt::AbstractVector{<:Real}, 
+    raydir::AbstractVector{<:Real}, 
+    raypnt::AbstractVector{<:Real}
+)
+    ndotu = dot(planenorm, raydir)
+    if ndotu ≈ 0 error("no intersection or line is within plane") end
+
+    w  = raypnt - planepnt
+    si = -dot(planenorm, w) / ndotu
+    ψ  = w .+ si .* raydir .+ planepnt
+    return ψ
+end
+
 
 """
     CameraModel(width,height,fc,cc,skew,kc)
