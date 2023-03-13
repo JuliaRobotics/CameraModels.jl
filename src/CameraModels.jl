@@ -1,5 +1,6 @@
 module CameraModels
 
+using LinearAlgebra
 using DocStringExtensions
 using StaticArrays
 import Rotations as Rot_

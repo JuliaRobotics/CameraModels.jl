@@ -188,7 +188,12 @@ export Pinhole
 const Pinhole = (@warn("CameraModels.Pinhole is deprecated, use CamereModels.CameraCalibration instead."); CameraCalibration)
 function Pinhole(columns::Int,rows::Int,prinicipalpoint,focallength::Vector2 )
   @warn "CameraModels.Pinhole is deprecated, use CamereModels.CameraCalibration instead."
-  CameraCalibration(;width=columns,height=rows,center=prinicipalpoint,focal=focallength)
+  CameraCalibration(;
+    height=rows,
+    width=columns,
+    center=prinicipalpoint,
+    focal=focallength
+  )
 end
 
 function Base.getproperty(x::Pinhole, f::Symbol)

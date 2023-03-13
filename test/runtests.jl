@@ -17,6 +17,7 @@ end
 
 
 
+include("testutils.jl")
 include("CameraTestBench.jl")
 include("Pinhole.jl")
 include("SkewDistortion.jl")
