@@ -1,6 +1,6 @@
 using Test
 using CameraModels
-using Manifolds
+import Manifolds as MJL
 
 
 @testset "Test intersect of line and plane" begin
@@ -20,7 +20,7 @@ end
 
 @testset "Test raytracing to plane" begin
 
-M = SpecialEuclidean(3)
+M = MJL.SpecialEuclidean(3)
 Mr = M.manifold[2]
 R0 = [1 0 0; 0 1 0; 0 0 1.]
 
@@ -35,9 +35,9 @@ l_nFL = [0; -0.05; 1.]
 l_FL = [0; 0; -2.]
 
 # local level to body to extrinsic transform 
-l_T_b = ArrayPartition([0;0;0.], R0)
-b_T_ex = ArrayPartition([0;0;0.], exp_lie(Mr, hat(Mr, R0, [0;0.2;0.2])))
-l_T_ex = compose(M, l_T_b, b_T_ex)
+l_T_b = MJL.ArrayPartition([0;0;0.], R0)
+b_T_ex = MJL.ArrayPartition([0;0;0.], MJL.exp_lie(Mr, MJL.hat(Mr, R0, [0;0.2;0.2])))
+l_T_ex = MJL.compose(M, l_T_b, b_T_ex)
 
 # Ray trace
 l_Forb = intersectRayToPlane(
@@ -50,8 +50,8 @@ l_Forb = intersectRayToPlane(
 
 
 ## Place the body somewhere in the world
-w_T_b = ArrayPartition([0.;0.;2.], exp_lie(Mr, hat(Mr, R0, [0;0;0.])))
+w_T_b = MJL.ArrayPartition([0.;0.;2.], MJL.exp_lie(Mr, MJL.hat(Mr, R0, [0;0;0.])))
 # find feature points in the world frame
-_w_Forb = affine_matrix(M, w_T_b)*[l_Forb; 1.]
+_w_Forb = MJL.affine_matrix(M, w_T_b)*[l_Forb; 1.]
 
 end

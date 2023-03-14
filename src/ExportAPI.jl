@@ -10,8 +10,9 @@ export CameraSkewDistortion
 export RadialDistortion
 
 export Ray, PixelCoordinate
-export pixel2ray, point2pixel, canreproject, origin, direction, sensorsize
-export columns, rows, lookdirection, updirection
+export pixel2ray, point2pixel, canreproject, sensorsize #, origin, direction, 
+
+export lookdirection, updirection #, columns, rows
 
 export intersectLineToPlane3D, intersectRayToPlane
 
