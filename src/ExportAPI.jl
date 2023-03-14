@@ -10,10 +10,11 @@ export CameraSkewDistortion
 export RadialDistortion
 
 export Ray, PixelCoordinate
-export pixel2ray, point2pixel, canreproject, origin, direction, sensorsize
-export columns, rows, lookdirection, updirection
+export pixel2ray, point2pixel, canreproject, sensorsize #, origin, direction, 
 
-export intersectPlaneLine
+export lookdirection, updirection #, columns, rows
+
+export intersectLineToPlane3D, intersectRayToPlane
 
 # suppressing super general signatures likely to have conflicts.
 # TODO adopt common Julia definition for points and vectors, maybe something from JuliaGeometry, etc.

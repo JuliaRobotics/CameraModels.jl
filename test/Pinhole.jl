@@ -24,8 +24,8 @@ run_test_bench(model)
     @test principal_point ≈ should_be_principal_point
 
     ray = pixel2ray(model, principal_point)
-    @test direction(ray) ≈ CameraModels.Vector3(0,1,0)
-    @test origin(ray) ≈ CameraModels.Point3(0,0,0)
+    @test CameraModels.direction(ray) ≈ CameraModels.Vector3(0,1,0)
+    @test CameraModels.origin(ray) ≈ CameraModels.Point3(0,0,0)
 
 end
 

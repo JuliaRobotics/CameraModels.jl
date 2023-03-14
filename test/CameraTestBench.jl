@@ -26,7 +26,7 @@ function run_test_bench(model::C, pixel_accuracy::Float64 = 1e-5, ray_accuracy::
         ray = pixel2ray(model, some_pixel_location)
         
         # Generate a 3D point along that ray.
-        point = origin(ray) + 4.2 .* direction(ray)
+        point = CameraModels.origin(ray) + 4.2 .* CameraModels.direction(ray)
 
         # Some models might not implement point2pixel.
         if canreproject(model)
