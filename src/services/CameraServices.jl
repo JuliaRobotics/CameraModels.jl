@@ -95,9 +95,9 @@ Deprecates:
 Also see: [`project`](@ref)
 """
 function backproject(
-  model::AbstractCameraModel, # AbstractCameraModel, 
-  px_coord::Union{<:AbstractVector{<:Real}, <:PixelIndex}
-)
+    model::AbstractCameraModel, 
+    px_coord::Union{<:AbstractVector{<:Real}, <:PixelIndex}
+  )
   #
   x =  (px_coord[1] - c_w(model)) / f_w(model)
   y = -(px_coord[2] - c_h(model)) / f_h(model)
