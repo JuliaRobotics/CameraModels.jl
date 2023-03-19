@@ -96,7 +96,7 @@ Also see: [`project`](@ref)
 """
 function backproject(
     model::CameraCalibrationT, 
-    px_coord::Union{<:AbstractVector{<:Real}, <:PixelCoordinate}
+    px_coord::Union{<:AbstractVector{<:Real}, <:PixelIndex}
   )
   #
   x =  (px_coord[1] - c_w(model)) / f_w(model)
@@ -124,7 +124,7 @@ end
 function project!(
   ret::AbstractVector{<:Real}, 
   ci::CameraCalibration, #CameraIntrinsic, 
-  ce::CameraExtrinsic, 
+  ce::ArrayPartition, 
   pt::Vector{Float64}
 )
   res = ci.K*(ce.R*pt + ce.t)
@@ -152,7 +152,7 @@ function cameraResidual!(
     res::AbstractVector{<:Real},
     z::AbstractVector{<:Real},
     ci::CameraCalibration, #CameraIntrinsic,
-    ce::CameraExtrinsic,
+    ce::ArrayPartition,
     pt::AbstractVector{<:Real}  
   )
   # in place memory operations

@@ -7,9 +7,7 @@ export CameraCalibrationT, CameraCalibration, CameraCalibrationMutable
 
 export CameraSkewDistortion
 
-export RadialDistortion
-
-export Ray, PixelCoordinate
+export Ray, PixelIndex
 export pixel2ray, point2pixel, canreproject, sensorsize #, origin, direction, 
 
 export lookdirection, updirection #, columns, rows

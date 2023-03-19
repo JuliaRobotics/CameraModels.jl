@@ -1,8 +1,21 @@
 
 
-const PixelCoordinate = SVector{2, Float64}
-const Vector2 = SVector{2, Float64}
+struct PixelIndex{T <: Real}
+    row::T
+    col::T
+end
 
+function Base.getindex(p::PixelIndex,i::Int)
+    if i === 1
+        p.row
+    elseif i === 2  
+        p.col
+    else
+        DomainError("Camera only has rows and columns, cannot index to $i")
+    end
+end
+
+const Vector2 = SVector{2, Float64}
 const Point3 = SVector{3, Float64}
 const Vector3 = SVector{3, Float64}
 
