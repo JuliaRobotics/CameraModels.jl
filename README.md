@@ -15,10 +15,10 @@ Basic Camera Models including pinhole, radial distortion etc.
 ## Consolidated Package of Camera Models from Julia Community 
 
 The following camera calibration / projection models were found and consolidated in to a common `CameraCalibration` type with many helper functions to facility downstream adoption of this package:
-- `JuliaRobotics/SensorFeatureTracking.jl`: `PinholeModel`, `CameraIntrinsics`, `CameraExtrinsics`,`CameraModelFull`
+- `JuliaRobotics/SensorFeatureTracking.jl`: `PinholeCamera`, `CameraIntrinsics`, `CameraExtrinsics`,`CameraModelFull`
 - `yakir12/CameraModels`: `Pinhole`
 - `JuliaImages/CameraGeometry.jl`
-- More models to consolidated: https://github.com/JuliaRobotics/CameraModels.jl/issues/1#issuecomment-1144740912
+- More models to consolidate: https://github.com/JuliaRobotics/CameraModels.jl/issues/1#issuecomment-1144740912
 
 # JuliaRobotics/CameraModels.jl Image Convention
 
