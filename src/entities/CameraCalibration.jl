@@ -76,7 +76,7 @@ end
 
 Base.@kwdef struct CameraModelFull
   ci::CameraCalibration = CameraCalibration()
-  ce::ArrayPartition    = CameraExtrinsic()
+  ce::ArrayPartition    = ArrayPartition(SVector(0.,0.,0.),SMatrix{3,3}(1.,0.,0.,0.,1.,0.,0.,0.,1.)) # CameraExtrinsic()
 end
 
 

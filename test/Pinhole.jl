@@ -9,10 +9,10 @@
 end
 
 
-principal_point = PixelCoordinate(55.4, 49.6)
+principal_point = PixelIndex(55.4, 49.6)
 focal_length = CameraModels.Vector2(61.2, 66.4)
 
-# TODO fix on Julia 1.9
+
 model = Pinhole(100, 100, principal_point, focal_length)
 
 

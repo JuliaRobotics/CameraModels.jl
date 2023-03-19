@@ -3,6 +3,16 @@
 ## consolidated types from various repos in Julia ecosystem
 ## ================================================================================================
 
+@deprecate project(cm::CameraModelFull, pt::AbstractVector{<:Real}) project(cm.ci,pt) # drops extrinsics
+
+# function project(
+#   cm::CameraModelFull, 
+#   pt::AbstractVector{<:Real}
+# )
+#   res = Vector{Float64}(2)
+#   project!(res, cm, pt)
+#   return res
+# end
 
 """
     CameraCalibrationT
@@ -94,7 +104,7 @@ CameraModel = (@warn("CameraModels.CameraModel is deprecated, use CameraModels.A
 
 
 export CameraModelandParameters
-# const CameraModelandParameters = (@warn("CameraModels.CameraModelandParameters is deprecated, use CamereModels.CameraCalibration instead.");CameraCalibration)
+# const CameraModelandParameters = (@warn("CameraModels.CameraModelandParameters is deprecated, use CameraModels.CameraCalibration instead.");CameraCalibration)
 
 function CameraModelandParameters(
     width::Int,
@@ -107,7 +117,7 @@ function CameraModelandParameters(
     Ki::AbstractMatrix{<:Real} = inv(K)
   )
   #
-  @warn("CameraModels.CameraModelandParameters is deprecated, use CamereModels.CameraCalibration instead.")
+  @warn("CameraModels.CameraModelandParameters is deprecated, use CameraModels.CameraCalibration instead.")
   CameraCalibration(;width,height,K=SMatrix{3,3}(K))
 end
 
@@ -155,7 +165,7 @@ export PinholeCamera
 # end
 
 ## From JuliaRobotics/Caesar.jl
-# const PinholeCamera = (@warn("CameraModels.PinholeCamera is deprecated, use CamereModels.CameraCalibrationMutable instead."); CameraCalibration)
+# const PinholeCamera = (@warn("CameraModels.PinholeCamera is deprecated, use CameraModels.CameraCalibrationMutable instead."); CameraCalibration)
 
 function PinholeCamera(
   K_::AbstractMatrix=[[510;0;320.0]';[0.0;510;240]';[0.0;0;1]']; # legacy constructor
@@ -169,7 +179,7 @@ function PinholeCamera(
   K::AbstractMatrix=[[f_w;shear;c_w]';[0.0;f_h;c_h]';[0.0;0;1]'],        # consolidated matrix K
 )
   #
-  @warn "CameraModels.PinholeCamera is deprecated, use CamereModels.CameraCalibrationMutable instead."
+  @warn "CameraModels.PinholeCamera is deprecated, use CameraModels.CameraCalibrationMutable instead."
   if 3 < size(K_,1)
     @warn "PinholeCamera(arg), 3 < size(arg,1), assuming legacy constructor as img as input argument."
     return CameraCalibrationMutable(K_) # as though img=K_
@@ -205,9 +215,9 @@ export Pinhole
 
 
 ## From yakir12/CameraModels.jl
-# const Pinhole = (@warn("CameraModels.Pinhole is deprecated, use CamereModels.CameraCalibration instead."); CameraCalibration)
+# const Pinhole = (@warn("CameraModels.Pinhole is deprecated, use CameraModels.CameraCalibration instead."); CameraCalibration)
 function Pinhole(columns::Int,rows::Int,prinicipalpoint,focallength::Vector2 )
-  @warn "CameraModels.Pinhole is deprecated, use CamereModels.CameraCalibration instead."
+  @warn "CameraModels.Pinhole is deprecated, use CameraModels.CameraCalibration instead."
   f_w,f_h = focallength[1], focallength[2]
   c_w,c_h = prinicipalpoint[1], prinicipalpoint[2]
   K = SMatrix{3,3}([[f_w;0.0;c_w]';[0.0;f_h;c_h]';[0.0;0;1.]'] )
@@ -226,7 +236,7 @@ function CameraIntrinsic(
   height::Int=round(Int, K[2,3]*2),
 )
   #
-  @warn "CameraModels.CameraIntrinsic is deprecated, use CamereModels.CameraCalibration instead."
+  @warn "CameraModels.CameraIntrinsic is deprecated, use CameraModels.CameraCalibration instead."
   CameraCalibration(;width,height,K)
 end
 export CameraIntrinsic
@@ -237,7 +247,7 @@ export CameraIntrinsic
 # CameraIntrinsic(;x0=320.0,y0=240.0,fx=510.0,fy=510.0,s=0.0) = CameraIntrinsic([[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'])
 
 ## From JuliaRobotics/Caesar.jl
-# const CameraIntrinsic = (@warn("CameraModels.CameraIntrinsic is deprecated, use CamereModels.CameraCalibration instead.");CameraCalibration)
+# const CameraIntrinsic = (@warn("CameraModels.CameraIntrinsic is deprecated, use CameraModels.CameraCalibration instead.");CameraCalibration)
 
 
 function Base.getproperty(
