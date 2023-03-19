@@ -5,7 +5,7 @@ using Manifolds
 using DocStringExtensions
 using StaticArrays
 import Rotations as Rot_
-
+import Base: getindex, getproperty
 
 
 # exports

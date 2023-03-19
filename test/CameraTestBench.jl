@@ -31,7 +31,8 @@ function run_test_bench(model::C, pixel_accuracy::Float64 = 1e-5, ray_accuracy::
         # Some models might not implement point2pixel.
         if canreproject(model)
             reprojection = point2pixel(model, point)
-            @test some_pixel_location ≈ reprojection atol = pixel_accuracy
+            @test some_pixel_location[1] ≈ reprojection[1] atol = pixel_accuracy
+            @test some_pixel_location[2] ≈ reprojection[2] atol = pixel_accuracy
         else 
             @info "point2pixel not implemented for $(C)."
         end
