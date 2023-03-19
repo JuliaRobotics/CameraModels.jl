@@ -1,9 +1,10 @@
 
 
-struct PixelIndex{T <: Real}
+struct PixelIndex{VALID, T <: Real}
     row::T
     col::T
 end
+PixelIndex(u::T,v::T;valid::Bool=true) where {T <: Real} = PixelIndex{valid,T}(u,v)
 
 function Base.getindex(p::PixelIndex,i::Int)
     if i === 1

@@ -67,12 +67,25 @@ function project(
   row = c_h(model) - f_h(model) * pointincamera[2] / pointincamera[3]
   return PixelIndex(column, row)
 end
+
 ## homogeneous point coords xyzw (stereo cameras)
-# # xyzw are in the camera frame, i.e. x-columns, y-rows, z-forward
-# # left cam
-# fz = _f / z
-# u = x * fz + center[1] # add center to get PixelCoordinate
-# v = y * fz + center[2]
+# xyzw are in the camera frame (c_), i.e. x-columns, y-rows, z-forward
+function projectHomogeneous(
+  cam::AbstractCameraModel,
+  c_Ph::SVector{4,Float64}
+)
+  # left cam
+  x,y,z,w = (c_Ph...,)
+  fxz = f_w(cam) / z
+  fyz = f_h(cam) / z
+  w = x * fxz + c_w(cam) # add center to get PixelIndex
+  h = y * fyz + c_h(cam)
+  if (w==0&&0<z) || 0 < (z/w)
+    PixelIndex(w,h)
+  else
+    PixelIndex(0.,0.; valid=false)
+  end
+end
 # # right cam
 # u2 = (x - w*baseline) * fz + center[1]
 # # infront or behind

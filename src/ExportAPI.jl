@@ -9,6 +9,8 @@ export CameraSkewDistortion
 
 export Ray, PixelIndex
 export pixel2ray, point2pixel, canreproject, sensorsize #, origin, direction, 
+export project, projectHomogeneous
+export backproject, backprojectHomogeneous
 
 export lookdirection, updirection #, columns, rows
 
