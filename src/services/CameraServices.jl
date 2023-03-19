@@ -7,10 +7,10 @@
 ## From yakir12/CameraModels.jl
 origin(vector::Union{<:AbstractVector{<:Real},<:Vector3}) = origin3d
 origin(ray::Ray) = ray.origin
-lookdirection(cameramodel::CameraCalibrationT) = SVector{3}(0,1,0)
-updirection(cameramodel::CameraCalibrationT) = SVector{3}(0,0,1)
-width(cameramodel::CameraCalibrationT) = cameramodel.width
-height(cameramodel::CameraCalibrationT) = cameramodel.height 
+lookdirection(cameramodel::AbstractCameraModel) = SVector{3}(0,1,0)
+updirection(cameramodel::AbstractCameraModel) = SVector{3}(0,0,1)
+width(cameramodel::AbstractCameraModel) = cameramodel.width
+height(cameramodel::AbstractCameraModel) = cameramodel.height 
 direction(vector::Union{<:AbstractVector{<:Real},<:Vector3}) = vector
 direction(ray::Ray) = ray.direction
 sensorsize(cameramodel::AbstractCameraModel) = SVector{2}(width(cameramodel), height(cameramodel))
@@ -24,11 +24,11 @@ canreproject(camera::AbstractCameraModel) = true
 
 
 ## From JuliaRobotics/Caesar.jl
-f_w(pc::CameraCalibrationT) = pc.K[1,1]
-f_h(pc::CameraCalibrationT) = pc.K[2,2]
-shear(pc::CameraCalibrationT) = pc.K[1,2]
-c_w(pc::CameraCalibrationT) = pc.K[1,3]
-c_h(pc::CameraCalibrationT) = pc.K[2,3]
+f_w(pc::AbstractCameraModel) = pc.K[1,1]
+f_h(pc::AbstractCameraModel) = pc.K[2,2]
+shear(pc::AbstractCameraModel) = pc.K[1,2]
+c_w(pc::AbstractCameraModel) = pc.K[1,3]
+c_h(pc::AbstractCameraModel) = pc.K[2,3]
 
 set_f_w!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,1] = val)
 set_f_h!(pc::CameraCalibrationMutable, val::Real) = (pc.K[2,2] = val)
@@ -59,13 +59,13 @@ Deprecates:
 Also see: [`backproject`](@ref)
 """
 function project(
-    model::CameraCalibrationT,
+    model::AbstractCameraModel,
     pointincamera::Union{<:AbstractVector{<:Real}, <:Point3}
   )
   #
   column = c_w(model) + f_w(model) * pointincamera[1] / pointincamera[3]
   row = c_h(model) - f_h(model) * pointincamera[2] / pointincamera[3]
-  return PixelCoordinate(column, row)
+  return PixelIndex(column, row)
 end
 ## homogeneous point coords xyzw (stereo cameras)
 # # xyzw are in the camera frame, i.e. x-columns, y-rows, z-forward
@@ -95,9 +95,9 @@ Deprecates:
 Also see: [`project`](@ref)
 """
 function backproject(
-    model::CameraCalibrationT, 
-    px_coord::Union{<:AbstractVector{<:Real}, <:PixelIndex}
-  )
+  model::AbstractCameraModel, # AbstractCameraModel, 
+  px_coord::Union{<:AbstractVector{<:Real}, <:PixelIndex}
+)
   #
   x =  (px_coord[1] - c_w(model)) / f_w(model)
   y = -(px_coord[2] - c_h(model)) / f_h(model)

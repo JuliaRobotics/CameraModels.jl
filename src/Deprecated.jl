@@ -5,6 +5,15 @@
 ## ================================================================================================
 ## consolidated types below
 
+export CameraCalibrationT
+
+"""
+    CameraCalibrationT
+
+A Union type for users to implement against both `struct`` and `mutable struct` definitions of `CameraCalibration`
+"""
+CameraCalibrationT = Union{<:CameraCalibration, <:CameraCalibrationMutable}
+
 @deprecate CameraExtrinsic(R::AbstractMatrix=[1 0 0; 0 1 0; 0 0 1.], t::AbstractVector=[0,0,0.]) ArrayPartition(SVector(t...),SMatrix(R))
 
 # Camera extrinsic must be world in camera frame (cRw)

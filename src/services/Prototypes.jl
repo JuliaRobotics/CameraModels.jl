@@ -37,11 +37,12 @@ Return the size of the camera sensor. By default calling out to columns(model) a
 function sensorsize end
 
 """
-    pixel2ray(cameramodel::AbstractCameraModel, pixelcoordinate::$(PixelCoordinate))
+    pixel2ray(cameramodel::AbstractCameraModel, pixelIndex::$(PixelIndex))
 
-Returns the ray in space (origin + direction) corresponding to this `pixelcoordinate`.
+Returns the ray in space (origin + direction) corresponding to this `pixelIndex`.
 """
 function pixel2ray end
+function backproject end
 
 """
     point2pixel(camera::AbstractCameraModel, pointincamera::$(Point3))
@@ -49,6 +50,7 @@ function pixel2ray end
 Returns the pixel location onto which the 3D coordinate `pointincamera` is projected.
 """
 function point2pixel end
+function project end
 
 """
     lookdirection(camera::AbstractCameraModel)
