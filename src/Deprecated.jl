@@ -6,6 +6,28 @@
 ## consolidated types below
 
 
+
+# CameraCalibration(
+#   height::Int= 480,
+#   width::Int = 640,
+#   center::Union{<:AbstractVector{<:Real},<:PixelCoordinate} = [width/2;height/2],
+#   focal::AbstractVector{<:Real}  = 1.1*[height; height], # just emperical default
+#   kc::AbstractVector{<:Real} = SVector{5}(zeros(5)),
+#   skew::Real = 0.0,
+#   K::AbstractMatrix =[[focal[1];skew;center[1]]';[0.0;focal[2];center[2]]';[0.0;0;1]'],
+# ) = CameraCalibration(height, width, kc, SMatrix{3,3}(K), SMatrix{3,3}(inv(K)) )
+# CameraCalibrationMutable(;
+#   width::Int = 640,
+#   height::Int= 480,
+#   center::Union{<:AbstractVector{<:Real},<:PixelCoordinate} = [width/2;height/2],
+#   focal::AbstractVector{<:Real}  = 1.1*[height; height], # just emperical default
+#   kc::AbstractVector{<:Real} = MVector{5}(zeros(5)),
+#   skew::Real = 0.0,
+#   K::AbstractMatrix =[[focal[1];skew;center[1]]';[0.0;focal[2];center[2]]';[0.0;0;1]'],
+# ) = CameraCalibrationMutable(height, width, kc, MMatrix{3,3}(K), MMatrix{3,3}(inv(K)) )
+
+
+
 @deprecate point2pixel(model, pt) project(model, pt[[1;3;2]])
 @deprecate pixel2ray(model, px) backproject(model, px)[[1;3;2]]
 
@@ -53,7 +75,7 @@ CameraModel = (@warn("CameraModels.CameraModel is deprecated, use CameraModels.A
 @deprecate columns(w...;kw...) width(w...;kw...)
 @deprecate rows(w...;kw...) height(w...;kw...)
 
-sensorsize(cameramodel::CameraModel) = SVector{2}(width(cameramodel), height(cameramodel))
+# sensorsize(cameramodel::CameraModel) = SVector{2}(width(cameramodel), height(cameramodel))
 
 
 export CameraModelandParameters
@@ -71,26 +93,9 @@ function CameraModelandParameters(
   )
   #
   @warn("CameraModels.CameraModelandParameters is deprecated, use CamereModels.CameraCalibration instead.")
-  CameraCalibration(;width,height,K)
+  CameraCalibration(;width,height,K=SMatrix{3,3}(K))
 end
 
-
-function Base.getproperty(x::CameraModelandParameters, f::Symbol)
-  if f == :skew
-    getfield(x, :K)[1,2]
-  elseif f == :columns
-    getfield(x, :width)
-  elseif f == :rows
-    getfield(x, :height)
-  elseif f == :prinicipalpoint || f == :cc
-    SA[(getfield(x, :K)[1:2, 3])...]
-  elseif f == :focallength || f == :fc
-    K = getfield(x, :K)
-    SA[K[1,1];K[2,2]] 
-  else
-    getfield(x, f)
-  end
-end
 
 
 # """
@@ -135,28 +140,27 @@ export PinholeCamera
 # end
 
 ## From JuliaRobotics/Caesar.jl
-const PinholeCamera = (@warn("CameraModels.PinholeCamera is deprecated, use CamereModels.CameraCalibrationMutable instead."); CameraCalibration)
+# const PinholeCamera = (@warn("CameraModels.PinholeCamera is deprecated, use CamereModels.CameraCalibrationMutable instead."); CameraCalibration)
 
 function PinholeCamera(
-    K_::AbstractMatrix=[[510;0;320.0]';[0.0;510;240]';[0.0;0;1]']; # legacy constructor
-    width::Int=round(Int, K_[1,3]*2), 
-    height::Int=round(Int, K_[2,3]*2),
-    f_w::Real=K_[1,1],
-    f_h::Real=K_[2,2],
-    c_w::Real=K_[1,3],
-    c_h::Real=K_[2,3],
-    shear::Real=K_[1,2],
-    K::AbstractMatrix=[[f_w;shear;c_w]';[0.0;f_h;c_h]';[0.0;0;1]'],        # consolidated matrix K
-  )
+  K_::AbstractMatrix=[[510;0;320.0]';[0.0;510;240]';[0.0;0;1]']; # legacy constructor
+  width::Int=round(Int, K_[1,3]*2), 
+  height::Int=round(Int, K_[2,3]*2),
+  f_w::Real=K_[1,1],
+  f_h::Real=K_[2,2],
+  c_w::Real=K_[1,3],
+  c_h::Real=K_[2,3],
+  shear::Real=K_[1,2],
+  K::AbstractMatrix=[[f_w;shear;c_w]';[0.0;f_h;c_h]';[0.0;0;1]'],        # consolidated matrix K
+)
   #
   @warn "CameraModels.PinholeCamera is deprecated, use CamereModels.CameraCalibrationMutable instead."
   if 3 < size(K_,1)
     @warn "PinholeCamera(arg), 3 < size(arg,1), assuming legacy constructor as img as input argument."
     return CameraCalibrationMutable(K_) # as though img=K_
   end
-  CameraCalibrationMutable(;width,height,K)
+  CameraCalibrationMutable(;width,height,K=MMatrix{3,3}(K))
 end
-
 
 # @deprecate PinholeCamera(img::AbstractMatrix) CameraCalibrationMutable(img)
 
@@ -168,17 +172,17 @@ end
 # end
 
 
-f_w(pc::PinholeCamera) = pc.K[1,1]
-f_h(pc::PinholeCamera) = pc.K[2,2]
-shear(pc::PinholeCamera) = pc.K[1,2]
-c_w(pc::PinholeCamera) = pc.K[1,3]
-c_h(pc::PinholeCamera) = pc.K[2,3]
+# f_w(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[1,1]
+# f_h(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[2,2]
+# shear(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[1,2]
+# c_w(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[1,3]
+# c_h(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[2,3]
 
-set_f_w!(pc::PinholeCamera, val::Real) = (pc.K[1,1] = val)
-set_f_h!(pc::PinholeCamera, val::Real) = (pc.K[2,2] = val)
-set_shear!(pc::PinholeCamera, val::Real) = (pc.K[1,2] = val)
-set_c_w!(pc::PinholeCamera, val::Real) = (pc.K[1,3] = val)
-set_c_h!(pc::PinholeCamera, val::Real) = (pc.K[2,3] = val)
+# set_f_w!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,1] = val)
+# set_f_h!(pc::CameraCalibrationMutable, val::Real) = (pc.K[2,2] = val)
+# set_shear!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,2] = val)
+# set_c_w!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,3] = val)
+# set_c_h!(pc::CameraCalibrationMutable, val::Real) = (pc.K[2,3] = val)
 
 
 export Pinhole
@@ -188,28 +192,73 @@ export Pinhole
 const Pinhole = (@warn("CameraModels.Pinhole is deprecated, use CamereModels.CameraCalibration instead."); CameraCalibration)
 function Pinhole(columns::Int,rows::Int,prinicipalpoint,focallength::Vector2 )
   @warn "CameraModels.Pinhole is deprecated, use CamereModels.CameraCalibration instead."
+  f_w,f_h = focallength[1], focallength[2]
+  c_w,c_h = prinicipalpoint[1], prinicipalpoint[2]
+  K = SMatrix{3,3}([[f_w;0.0;c_w]';[0.0;f_h;c_h]';[0.0;0;1.]'] )
   CameraCalibration(;
     height=rows,
     width=columns,
-    center=prinicipalpoint,
-    focal=focallength
+    K
   )
 end
 
-function Base.getproperty(x::Pinhole, f::Symbol)
-  if f == :columns
+function CameraIntrinsic(
+  K_::AbstractMatrix=[[510;0;320.0]';[0.0;510;240]';[0.0;0;1]']; # legacy constructor
+  x0=320.0,y0=240.0,fx=510.0,fy=510.0,s=0.0,                     # legacy function support
+  K::AbstractMatrix=[[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'],        # consolidated matrix K
+  width::Int=round(Int, K[1,3]*2), 
+  height::Int=round(Int, K[2,3]*2),
+)
+  #
+  @warn "CameraModels.CameraIntrinsic is deprecated, use CamereModels.CameraCalibration instead."
+  CameraCalibration(;width,height,K)
+end
+export CameraIntrinsic
+
+# Base.@kwdef struct CameraIntrinsic
+#   K::Array{Float64,2}
+# end
+# CameraIntrinsic(;x0=320.0,y0=240.0,fx=510.0,fy=510.0,s=0.0) = CameraIntrinsic([[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'])
+
+## From JuliaRobotics/Caesar.jl
+# const CameraIntrinsic = (@warn("CameraModels.CameraIntrinsic is deprecated, use CamereModels.CameraCalibration instead.");CameraCalibration)
+
+
+function Base.getproperty(
+  x::Union{<:Pinhole, CameraModelandParameters},
+  f::Symbol,
+)
+  if f == :skew
+    getfield(x, :K)[1,2]
+  elseif f == :columns
     getfield(x, :width)
   elseif f == :rows
     getfield(x, :height)
-  elseif f == :prinicipalpoint
+  elseif f == :prinicipalpoint || f == :cc
     SA[(getfield(x, :K)[1:2, 3])...]
-  elseif f == :focallength
+  elseif f == :focallength || f == :fc
     K = getfield(x, :K)
     SA[K[1,1];K[2,2]] 
   else
     getfield(x, f)
   end
 end
+# function Base.getproperty(x::CameraModelandParameters, f::Symbol)
+#   if f == :skew
+#     getfield(x, :K)[1,2]
+#   elseif f == :columns
+#     getfield(x, :width)
+#   elseif f == :rows
+#     getfield(x, :height)
+#   elseif f == :prinicipalpoint || f == :cc
+#     SA[(getfield(x, :K)[1:2, 3])...]
+#   elseif f == :focallength || f == :fc
+#     K = getfield(x, :K)
+#     SA[K[1,1];K[2,2]] 
+#   else
+#     getfield(x, f)
+#   end
+# end
 
 # ## From yakir12/CameraModels.jl
 # struct Pinhole <: CameraModel
@@ -220,49 +269,6 @@ end
 #   focallength::Vector2             # in pixels
 # end
 
-
-
-export CameraIntrinsic
-
-# Base.@kwdef struct CameraIntrinsic
-#   K::Array{Float64,2}
-# end
-# CameraIntrinsic(;x0=320.0,y0=240.0,fx=510.0,fy=510.0,s=0.0) = CameraIntrinsic([[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'])
-
-## From JuliaRobotics/Caesar.jl
-const CameraIntrinsic = (@warn("CameraModels.CameraIntrinsic is deprecated, use CamereModels.CameraCalibration instead.");CameraCalibration)
-
-function CameraIntrinsic(
-    K_::AbstractMatrix=[[510;0;320.0]';[0.0;510;240]';[0.0;0;1]']; # legacy constructor
-    x0=320.0,y0=240.0,fx=510.0,fy=510.0,s=0.0,                     # legacy function support
-    K::AbstractMatrix=[[fx;s;x0]';[0.0;fy;y0]';[0.0;0;1]'],        # consolidated matrix K
-    width::Int=round(Int, K[1,3]*2), 
-    height::Int=round(Int, K[2,3]*2),
-  )
-  #
-  @warn "CameraModels.CameraIntrinsic is deprecated, use CamereModels.CameraCalibration instead."
-  CameraCalibration(;width,height,K)
-end
-
-
-
-
-
-## ===========================================================================
-## Legacy types that are not so easy to consolidate (not exported) DO NOT USE
-## ===========================================================================
-
-
-# Camera extrinsic must be world in camera frame (cRw)
-Base.@kwdef struct CameraExtrinsic{T <: Real}
-  R::SMatrix{3,3,T} = id = one(Rot_.RotMatrix{3, Float64}).mat
-  t::Vector{T} = zeros(3)
-end
-
-Base.@kwdef struct CameraModelFull
-  ci::CameraIntrinsic = CameraIntrinsic()
-  ce::CameraExtrinsic = CameraExtrinsic()
-end
 
 
 

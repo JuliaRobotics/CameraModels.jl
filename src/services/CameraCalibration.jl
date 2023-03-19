@@ -1,25 +1,6 @@
 
 
 
-CameraCalibration(;
-  width::Int = 640,
-  height::Int= 480,
-  center::Union{<:AbstractVector{<:Real},<:PixelCoordinate} = [width/2;height/2],
-  focal::AbstractVector{<:Real}  = 1.1*[height; height], # just emperical default
-  kc::AbstractVector{<:Real} = SVector{5}(zeros(5)),
-  skew::Real = 0.0,
-  K::AbstractMatrix =[[focal[1];skew;center[1]]';[0.0;focal[2];center[2]]';[0.0;0;1]'],
-) = CameraCalibration(height, width, kc, SMatrix{3,3}(K), SMatrix{3,3}(inv(K)) )
-
-CameraCalibrationMutable(;
-  width::Int = 640,
-  height::Int= 480,
-  center::Union{<:AbstractVector{<:Real},<:PixelCoordinate} = [width/2;height/2],
-  focal::AbstractVector{<:Real}  = 1.1*[height; height], # just emperical default
-  kc::AbstractVector{<:Real} = MVector{5}(zeros(5)),
-  skew::Real = 0.0,
-  K::AbstractMatrix =[[focal[1];skew;center[1]]';[0.0;focal[2];center[2]]';[0.0;0;1]'],
-) = CameraCalibrationMutable(height, width, kc, MMatrix{3,3}(K), MMatrix{3,3}(inv(K)) )
 
 """
     $SIGNATURES
@@ -36,8 +17,72 @@ function CameraCalibrationMutable(img::AbstractMatrix{T}) where T
   f_w = 1.1*height
   f_h = f_w
   c_w, c_h = width/2, height/2
+  K = MMatrix{3,3}([[f_w;0.0;c_w]';[0.0;f_h;c_h]';[0.0;0;1.]'] )
   @info "Assuming default CameraCalibrationMutable from image size(img)=(rows,cols)=$(size(img)):" f_w f_h c_w c_h
-  CameraCalibrationMutable(;width, height, focal=[f_w, f_h], center=[c_w, c_h])
+  CameraCalibrationMutable(;width, height, K)
 end
 
 
+
+"""
+    $SIGNATURES
+
+Slightly general Radial Distortion type, currently limited to StaticArrays.jl on CPU, but can later be extended to utilize GPUs -- see notes.
+
+Notes
+- Make sure `dest` image is large enough to encapsulate the resulting image after un-distortion
+
+Example
+```julia
+using Images, FileIO, CameraModels
+
+# load the image
+img = load("myimg.jpg")
+
+# genereate a radial distortion object
+radialdistortion = RadialDistortion()
+```
+
+Reference:
+From Wikipedia: https://en.wikipedia.org/wiki/Distortion_(optics)
+  ( xd ,   yd ) = distorted image point as projected on image plane using specified lens,
+  ( xu ,   yu ) = undistorted image point as projected by an ideal pinhole camera,
+  ( xc ,   yc ) = distortion center,
+              r = sqrt( (xd - xc)^2 + (yd - yc)^2 )
+
+```math
+xu = xc + (xd + xc) / (1 + K1*(r^2) + K2*(r^4) + ...)
+yu = yc + (yd + yc) / (1 + K1*(r^2) + K2*(r^4) + ...)
+```
+
+DevNotes (Contributions welcome):
+- TODO manage image clamping if `dest` is too small and data should be cropped out.
+- TODO buffer radii matrix for better reuse on repeat image size sequences
+- TODO dispatch with either CUDA.jl or AMDGPU.jl <:AbstractArray objects.
+- TODO use Tullio.jl with multithreading and GPU
+- TODO check if LoopVectorization.jl tools like `@avx` help performance
+"""
+function radialDistortion!(
+  cc::CameraCalibration{<:Real,N}, 
+  dest::AbstractMatrix, 
+  src::AbstractMatrix
+) where N
+  # loop over entire image
+  for h_d in size(src,1), w_d in size(src,2)
+    # temporary coordinates
+    @inbounds h_ = h_d - cc.center[1]
+    @inbounds w_ = w_d - cc.center[2]
+    # calculate the radius from distortion center
+    _radius2 = h_^2 + w_^2
+    # calculate the denominator
+    _denomin = 1
+    @inbounds @fastmath for k in 1:N
+      _denomin += cc.kc[k]*(_radius2^k)
+    end
+    # calculate the new 'undistorted' coordinates and set equal to incoming image
+    @inbounds @fastmath h_u = cc.center[1] + h_/_denomin
+    @inbounds @fastmath w_u = cc.center[2] + h_/_denomin
+    dest[h_u,w_u] = src[h_d,w_d]
+  end
+  nothing
+end
