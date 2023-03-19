@@ -1,11 +1,8 @@
 
-
-
-
 ## ================================================================================================
-## consolidated types below
+## consolidated types from various repos in Julia ecosystem
+## ================================================================================================
 
-export CameraCalibrationT
 
 """
     CameraCalibrationT
@@ -189,18 +186,19 @@ end
 #   PinholeCamera(;f_w, f_h, c_w, c_h)
 # end
 
-
+@deprecate c_w(w...) pp_w(w...)
+@deprecate c_h(w...) pp_h(w...)
 # f_w(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[1,1]
 # f_h(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[2,2]
 # shear(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[1,2]
-# c_w(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[1,3]
-# c_h(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[2,3]
+# pp_w(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[1,3]
+# pp_h(pc::Union{CameraCalibration,CameraCalibrationMutable}) = pc.K[2,3]
 
 # set_f_w!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,1] = val)
 # set_f_h!(pc::CameraCalibrationMutable, val::Real) = (pc.K[2,2] = val)
 # set_shear!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,2] = val)
-# set_c_w!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,3] = val)
-# set_c_h!(pc::CameraCalibrationMutable, val::Real) = (pc.K[2,3] = val)
+# set_pp_w!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1,3] = val)
+# set_pp_h!(pc::CameraCalibrationMutable, val::Real) = (pc.K[2,3] = val)
 
 
 export Pinhole
