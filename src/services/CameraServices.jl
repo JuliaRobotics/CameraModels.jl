@@ -44,6 +44,17 @@ canreproject(camera::AbstractCameraModel) = true
 ## =========================================================================================
 
 
+## From JuliaRobotics/SensorFeatureTracking.jl
+function project!(
+  ret::AbstractVector{<:Real}, 
+  ci::CameraCalibration, #CameraIntrinsic, 
+  ce::ArrayPartition,
+  pt::AbstractVector{<:Real}
+)
+  res = ci.K*(ce.x[2]*pt + ce.x[1])
+  ret[1:2] = res[1:2]./res[3]
+  PixelIndex(ret[1], ret[2])
+end
 
 """
     $SIGNATURES
@@ -67,21 +78,12 @@ function project(
     c_P::Union{<:AbstractVector{<:Real}, <:Point3}
   )
   #
-  column = pp_w(model) + f_w(model) * c_P[1] / c_P[3]
-  row = pp_h(model) - f_h(model) * c_P[2] / c_P[3]
-  return PixelIndex(column, row)
-end
-
-## From JuliaRobotics/SensorFeatureTracking.jl
-function project!(
-  ret::AbstractVector{<:Real}, 
-  ci::CameraCalibration, #CameraIntrinsic, 
-  ce::ArrayPartition, 
-  pt::Vector{Float64}
-)
-  res = ci.K*(ce.R*pt + ce.t)
-  ret[1:2] = res[1:2]./res[3]
-  nothing
+  ret = MVector(0.,0.)
+  e0 = ArrayPartition( SVector(0.,0.,0.), SMatrix{3,3}(1.,0.,0.,0.,1.,0.,0.,0.,1.) )
+  project!(ret, model, e0, c_P)
+  # column = pp_w(model) + f_w(model) * c_P[1] / c_P[3]
+  # row = pp_h(model) - f_h(model) * c_P[2] / c_P[3]
+  # return PixelIndex(column, row)
 end
 
 project!(
@@ -89,14 +91,6 @@ project!(
   cm::CameraModelFull, 
   pt::AbstractVector{<:Real}) = project!(ret, cm.ci, cm.ce, pt)
 
-function project(
-  cm::CameraModelFull, 
-  pt::AbstractVector{<:Real}
-)
-  res = Vector{Float64}(2)
-  project!(res, cm, pt)
-  return res
-end
 
 ## homogeneous point coords xyzw (stereo cameras)
 # xyzw are in the camera frame (c_), i.e. x-columns, y-rows, z-forward

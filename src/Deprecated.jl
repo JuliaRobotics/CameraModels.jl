@@ -3,6 +3,16 @@
 ## consolidated types from various repos in Julia ecosystem
 ## ================================================================================================
 
+@deprecate project(cm::CameraModelFull, pt::AbstractVector{<:Real}) project(cm.ci,pt) # drops extrinsics
+
+# function project(
+#   cm::CameraModelFull, 
+#   pt::AbstractVector{<:Real}
+# )
+#   res = Vector{Float64}(2)
+#   project!(res, cm, pt)
+#   return res
+# end
 
 """
     CameraCalibrationT

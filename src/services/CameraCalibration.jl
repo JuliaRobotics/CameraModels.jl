@@ -1,4 +1,17 @@
 
+function Base.show(io::IO, ::MIME"text/plain", cam::CameraCalibration)
+  println(io,"CameraCalibration {")
+  println(io,"  sensorsize      (w,h) = ", sensorsize(cam))
+  println(io,"  principal_point (w,h) = ", pp_w(cam), ",", pp_h(cam))
+  println(io,"  focal_length    (w,h) = ", f_w(cam), ",", f_h(cam))
+  println(io,"  shear                 = ", shear(cam))
+  println(io,"  radtan coeff          = ", cam.kc)
+  println(io, "}")
+  nothing
+end
+
+Base.show(io::IO, ::MIME"text/markdown", cam::CameraCalibration) = show(io, MIME("text/plain"), cam)
+Base.show(io::IO, cam::CameraCalibration) = show(io, MIME("text/plain"), cam)
 
 
 
