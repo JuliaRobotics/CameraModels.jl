@@ -1,6 +1,10 @@
 # History of CameraModels.jl
 
-## v0.1.0
+## v0.2
+
+- Remove method redefinition warnings by dropping additional types and keeping just construction helpers.  Only types are `CameraCalibration[Mutable]`.
+- Consolidate type `CameraIntrinsic`
+## v0.1
 
 - Created consolidated `CameraCalibration` type to replace various previous camera models (all doing about the same thing),
  - Also `CameraCalibrationMutable` and `CameraCalibratonT` as the Union dispatch type.
