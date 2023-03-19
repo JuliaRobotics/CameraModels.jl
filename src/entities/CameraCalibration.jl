@@ -80,15 +80,9 @@ CameraCalibrationT = Union{<:CameraCalibration, <:CameraCalibrationMutable}
 ## ===========================================================================
 
 
-# Camera extrinsic must be world in camera frame (cRw)
-Base.@kwdef struct CameraExtrinsic{T <: Real}
-  R::SMatrix{3,3,T,9} = one(Rot_.RotMatrix{3, Float64}).mat
-  t::SVector{3,T} = SVector(0,0,0.)
-end
-
 Base.@kwdef struct CameraModelFull
   ci::CameraCalibration = CameraCalibration()
-  ce::CameraExtrinsic   = CameraExtrinsic()
+  ce::ArrayPartition    = CameraExtrinsic()
 end
 
 

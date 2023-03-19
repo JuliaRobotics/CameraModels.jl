@@ -4,6 +4,7 @@
 
 - Remove method redefinition warnings by dropping additional types and keeping just construction helpers.  Only types are `CameraCalibration[Mutable]`.
 - Consolidate type `CameraIntrinsic`
+
 ## v0.1
 
 - Created consolidated `CameraCalibration` type to replace various previous camera models (all doing about the same thing),

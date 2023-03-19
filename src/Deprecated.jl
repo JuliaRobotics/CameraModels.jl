@@ -5,7 +5,16 @@
 ## ================================================================================================
 ## consolidated types below
 
+@deprecate CameraExtrinsic(R::AbstractMatrix=[1 0 0; 0 1 0; 0 0 1.], t::AbstractVector=[0,0,0.]) ArrayPartition(SVector(t...),SMatrix(R))
 
+# Camera extrinsic must be world in camera frame (cRw)
+# Base.@kwdef struct CameraExtrinsic{T <: Real}
+#   R::SMatrix{3,3,T,9} = one(Rot_.RotMatrix{3, Float64}).mat
+#   t::SVector{3,T} = SVector(0,0,0.)
+# end
+
+
+@deprecate PixelCoordinate(row,col) PixelIndex(row,col)
 
 # CameraCalibration(
 #   height::Int= 480,
@@ -79,7 +88,7 @@ CameraModel = (@warn("CameraModels.CameraModel is deprecated, use CameraModels.A
 
 
 export CameraModelandParameters
-const CameraModelandParameters = (@warn("CameraModels.CameraModelandParameters is deprecated, use CamereModels.CameraCalibration instead.");CameraCalibration)
+# const CameraModelandParameters = (@warn("CameraModels.CameraModelandParameters is deprecated, use CamereModels.CameraCalibration instead.");CameraCalibration)
 
 function CameraModelandParameters(
     width::Int,
@@ -189,7 +198,7 @@ export Pinhole
 
 
 ## From yakir12/CameraModels.jl
-const Pinhole = (@warn("CameraModels.Pinhole is deprecated, use CamereModels.CameraCalibration instead."); CameraCalibration)
+# const Pinhole = (@warn("CameraModels.Pinhole is deprecated, use CamereModels.CameraCalibration instead."); CameraCalibration)
 function Pinhole(columns::Int,rows::Int,prinicipalpoint,focallength::Vector2 )
   @warn "CameraModels.Pinhole is deprecated, use CamereModels.CameraCalibration instead."
   f_w,f_h = focallength[1], focallength[2]
@@ -225,7 +234,7 @@ export CameraIntrinsic
 
 
 function Base.getproperty(
-  x::Union{<:Pinhole, CameraModelandParameters},
+  x::CameraCalibration, # Union{<:Pinhole, CameraModelandParameters},
   f::Symbol,
 )
   if f == :skew
