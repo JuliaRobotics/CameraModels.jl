@@ -106,11 +106,8 @@ function projectHomogeneous(
   col = x * fx_z + pp_w(cam) # add center to get PixelIndex
   row = y * fy_z + pp_h(cam)
   # infront or behind
-  if (w==0&&0<z) || 0 < (z/w)
-    PixelIndex(row,col)
-  else
-    PixelIndex(0.,0.; valid=false)
-  end
+  depth=z/w
+  PixelIndex(row, col; depth, valid = (w==0&&0<z) || 0 < depth)
 end
 # # right cam
 # u2 = (x - w*baseline) * fz + center[1]
