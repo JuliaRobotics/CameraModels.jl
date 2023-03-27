@@ -43,22 +43,19 @@ w_T_c2 = ArrayPartition([0;-0.1;0.],[0 0 1; -1 0 0; 0 -1 0.])
 
 ##
 
-function projectPointFromWorld(cam, c_H_w, w_Ph)
+function projectPointFrom(cam, c_H_w, w_Ph)
   c_Ph = c_H_w*w_Ph |> SVector{4}
   CameraModels.projectHomogeneous(cam,c_Ph)
 end
 
 function cameraResidual(cam, meas, M, w_T_c, w_Ph, κ=1000)
-  pred = projectPointFromWorld(cam, inv(affine_matrix(M,w_T_c)), w_Ph)
+  pred = projectPointFrom(cam, inv(affine_matrix(M,w_T_c)), w_Ph)
   # experimental cost function to try force bad reprojects in front of the camera during optimization
   κ*(abs(pred.depth) - pred.depth)^2 + (meas[1]-pred[1])^2 + (meas[2]-pred[2])^2
 end
 
 function cost(w_Ph)
   cameraResidual(cam, obs1, M, w_T_c1, w_Ph) + cameraResidual(cam, obs2, M, w_T_c2, w_Ph)
-  # pre1 = projectPointFromWorld(cam, inv(affine_matrix(M,w_T_c1)), w_Ph)
-  # pre2 = projectPointFromWorld(cam, inv(affine_matrix(M,w_T_c2)), w_Ph)
-  # (obs1[1]-pre1[1])^2 + (obs1[2]-pre1[2])^2 + (obs2[1]-pre2[1])^2 + (obs2[2]-pre2[2])^2
 end
 
 ##
