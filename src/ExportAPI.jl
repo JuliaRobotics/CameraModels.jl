@@ -5,6 +5,7 @@ export AbstractCameraModel
 
 export CameraCalibration, CameraCalibrationMutable
 
+export toNonhomogeneous
 export CameraSkewDistortion
 
 export Ray, PixelIndex

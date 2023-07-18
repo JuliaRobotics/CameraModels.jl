@@ -1,4 +1,6 @@
 
+toNonhomogeneous(_Ph::AbstractVector) = SVector((_Ph[1:end-1]...,) ./ _Ph[end])
+
 
 """
     CameraModel(width,height,fc,cc,skew,kc)
