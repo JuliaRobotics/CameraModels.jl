@@ -44,6 +44,32 @@ canreproject(camera::AbstractCameraModel) = true
 ## =========================================================================================
 
 
+function undistortPoint(cam::CameraCalibration, xy, iter_num=1) #3)
+  k1, k2, p1, p2, k3 = cam.kc[1:5]
+  fx, fy = f_w(cam), f_h(cam) # cam.K[1, 1], cam.K[2, 2]
+  cx, cy = pp_w(cam), pp_h(cam) # cam.K[1:2, 3]
+  x, y = xy[1], xy[2]
+  x = (x - cx) / fx
+  x0 = x
+  y = (y - cy) / fy
+  y0 = y
+  for _ in 1:iter_num
+    r2 = x^2 + y^2
+    k_inv = 1 / (1 + k1*r2 + k2*r2^2 + k3*r2^3)
+    delta_x = 2*p1*x*y + p2 * (r2 + 2*x^2)
+    delta_y = p1*(r2 + 2*y^2) + 2*p2*x*y
+    x = (x0 - delta_x) * k_inv
+    y = (y0 - delta_y) * k_inv
+  end
+  return SA[x*fx+cx; y*fy+cy]
+end
+
+
+## =========================================================================================
+## FROM SCENE IN FRONT OF CAMERA TO IMAGE -- I.E. PROJECT
+## =========================================================================================
+
+
 ## From JuliaRobotics/SensorFeatureTracking.jl
 function project!(
   ret::AbstractVector{<:Real}, 
