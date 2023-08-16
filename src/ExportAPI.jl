@@ -5,8 +5,10 @@ export AbstractCameraModel
 
 export CameraCalibration, CameraCalibrationMutable
 
+export toNonhomogeneous
 export CameraSkewDistortion
 
+export undistortPoint
 export Ray, PixelIndex
 export pixel2ray, point2pixel, canreproject, sensorsize #, origin, direction, 
 export project, projectHomogeneous

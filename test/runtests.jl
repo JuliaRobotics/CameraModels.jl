@@ -18,6 +18,7 @@ end
 
 
 include("testutils.jl")
+include("multiview_manifolds.jl")
 include("CameraTestBench.jl")
 include("Pinhole.jl")
 include("SkewDistortion.jl")

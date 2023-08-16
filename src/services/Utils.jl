@@ -1,4 +1,6 @@
 
+toNonhomogeneous(_Ph::AbstractVector) = SVector((_Ph[1:end-1]...,) ./ _Ph[end])
+
 
 """
     CameraModel(width,height,fc,cc,skew,kc)
@@ -19,10 +21,11 @@ end
 """
     $SIGNATURES
 
-Slightly general Radial Distortion type, currently limited to StaticArrays.jl on CPU, but can later be extended to utilize GPUs -- see notes.
+Slightly general Radial Distortion type, currently limited to StaticArrays.jl on CPU,
 
 Notes
 - Make sure `dest` image is large enough to encapsulate the resulting image after un-distortion
+- TODO extended to utilize GPUs.
 
 Example
 ```julia
