@@ -44,7 +44,7 @@ canreproject(camera::AbstractCameraModel) = true
 ## =========================================================================================
 
 
-function undistortPoint(cam::CameraCalibration, xy, iter_num=1) #3)
+function undistortPoint(cam::CameraCalibration, xy, iter_num=3)
   k1, k2, p1, p2, k3 = cam.kc[1:5]
   fx, fy = f_w(cam), f_h(cam) # cam.K[1, 1], cam.K[2, 2]
   cx, cy = pp_w(cam), pp_h(cam) # cam.K[1:2, 3]
