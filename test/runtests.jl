@@ -1,6 +1,7 @@
 using CameraModels
 using Test
 using StaticArrays
+using RecursiveArrayTools: ArrayPartition
 
 import CameraModels: height, width
 
