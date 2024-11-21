@@ -35,8 +35,8 @@ l_nFL = [0; -0.05; 1.]
 l_FL = [0; 0; -2.]
 
 # local level to body to extrinsic transform 
-l_T_b = MJL.ArrayPartition([0;0;0.], R0)
-b_T_ex = MJL.ArrayPartition([0;0;0.], MJL.exp_lie(Mr, MJL.hat(Mr, R0, [0;0.2;0.2])))
+l_T_b = ArrayPartition([0;0;0.], R0)
+b_T_ex = ArrayPartition([0;0;0.], MJL.exp_lie(Mr, MJL.hat(Mr, R0, [0;0.2;0.2])))
 l_T_ex = MJL.compose(M, l_T_b, b_T_ex)
 
 # Ray trace
@@ -50,7 +50,7 @@ l_Forb = intersectRayToPlane(
 
 
 ## Place the body somewhere in the world
-w_T_b = MJL.ArrayPartition([0.;0.;2.], MJL.exp_lie(Mr, MJL.hat(Mr, R0, [0;0;0.])))
+w_T_b = ArrayPartition([0.;0.;2.], MJL.exp_lie(Mr, MJL.hat(Mr, R0, [0;0;0.])))
 # find feature points in the world frame
 _w_Forb = MJL.affine_matrix(M, w_T_b)*[l_Forb; 1.]
 
