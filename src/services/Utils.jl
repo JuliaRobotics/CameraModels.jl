@@ -82,20 +82,36 @@ function radialDistortion!(
     return nothing
 end
 
+"""
+    intersectLineToPlane3D(planenorm, planepnt, raydir, raypnt) -> point
 
+Compute the unique intersection point between an infinite 3-D line (ray) and a plane.
+
+# Arguments
+- `planenorm::AbstractVector{<:Real}` – plane normal vector (need not be unit-length)
+- `planepnt::AbstractVector{<:Real}` – any point lying on the plane
+- `raydir::AbstractVector{<:Real}` – direction vector of the line (need not be unit-length)
+- `raypnt::AbstractVector{<:Real}` – any point lying on the line
+
+# Returns
+- `ψ::Vector{<:Real}` – coordinates of the intersection point
+
+# Throws
+- `ErrorException` if the line is parallel to the plane (no intersection or line lies in plane).
+"""
 function intersectLineToPlane3D(
         planenorm::AbstractVector{<:Real},
         planepnt::AbstractVector{<:Real},
         raydir::AbstractVector{<:Real},
         raypnt::AbstractVector{<:Real}
     )
-    ndotu = dot(planenorm, raydir)
-    if ndotu ≈ 0
+    n_dot_u = dot(planenorm, raydir)
+    if n_dot_u ≈ 0
         error("no intersection or line is within plane")
     end
 
     w = raypnt - planepnt
-    si = -dot(planenorm, w) / ndotu
+    si = -dot(planenorm, w) / n_dot_u # ray parameter at intersection
     ψ = w .+ si .* raydir .+ planepnt
     return ψ
 end
