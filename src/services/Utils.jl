@@ -76,7 +76,7 @@ function radialDistortion!(
 
         num = one(T)
         rⁿ = r²
-        @inbounds for i in 1:N
+        for i in 1:N
             num += k[i] * rⁿ
             rⁿ *= r²
         end
