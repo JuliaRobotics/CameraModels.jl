@@ -1,4 +1,3 @@
-
 """
     $TYPEDEF
 
@@ -33,17 +32,17 @@ DevNotes
 
 Also see: [`AbstractCameraModel`](@ref) [`CameraCalibrationMutable`](@ref), (TODO: `ProjectiveCameraModel`)
 """
-Base.@kwdef struct CameraCalibration{R <: Real,N} <: AbstractCameraModel
-  """ number of pixels from top to bottom """
-  height::Int		       = 480
-  """ number of pixels from left to right """
-  width::Int		       = 640
-  """ distortion coefficients up to fifth order """
-  kc::SVector{N,R}     = SVector(zeros(5)...)
-  """ 3x3 camera calibration matrix """
-  K::SMatrix{3,3,R,9}  = SMatrix{3,3}([[1.1*height;0.0;width/2]';[0.0;1.1*height;height/2]';[0.0;0;1.]'] )
-  """ inverse of a 3x3 camera calibration matrix """
-  Ki::SMatrix{3,3,R,9} = inv(K)
+Base.@kwdef struct CameraCalibration{R <: Real, N} <: AbstractCameraModel
+    """ number of pixels from top to bottom """
+    height::Int = 480
+    """ number of pixels from left to right """
+    width::Int = 640
+    """ distortion coefficients up to fifth order """
+    kc::SVector{N, R} = SVector(zeros(5)...)
+    """ 3x3 camera calibration matrix """
+    K::SMatrix{3, 3, R, 9} = SMatrix{3, 3}([[1.1 * height;0.0;width / 2]';[0.0;1.1 * height;height / 2]';[0.0;0;1.0]'])
+    """ inverse of a 3x3 camera calibration matrix """
+    Ki::SMatrix{3, 3, R, 9} = inv(K)
 end
 
 
@@ -52,21 +51,18 @@ end
 
 See [`CameraCalibraton`](@ref).
 """
-Base.@kwdef mutable struct CameraCalibrationMutable{R <: Real,N} <: AbstractCameraModel
-  """ number of pixels from top to bottom """
-  height::Int		     = 480
-  """ number of pixels from left to right """
-  width::Int		     = 640
-  """ distortion coefficients up to fifth order """
-  kc::MVector{N,R}   = MVector(zeros(5)...)
-  """ 3x3 camera calibration matrix """
-  K::MMatrix{3,3,R}  = MMatrix{3,3}([[1.1*height;0.0;width/2]';[0.0;1.1*height;height/2]';[0.0;0;1.]'] )
-  """ inverse of a 3x3 camera calibration matrix """
-  Ki::MMatrix{3,3,R} = inv(K)
+Base.@kwdef mutable struct CameraCalibrationMutable{R <: Real, N} <: AbstractCameraModel
+    """ number of pixels from top to bottom """
+    height::Int = 480
+    """ number of pixels from left to right """
+    width::Int = 640
+    """ distortion coefficients up to fifth order """
+    kc::MVector{N, R} = MVector(zeros(5)...)
+    """ 3x3 camera calibration matrix """
+    K::MMatrix{3, 3, R} = MMatrix{3, 3}([[1.1 * height;0.0;width / 2]';[0.0;1.1 * height;height / 2]';[0.0;0;1.0]'])
+    """ inverse of a 3x3 camera calibration matrix """
+    Ki::MMatrix{3, 3, R} = inv(K)
 end
-
-
-
 
 
 ## ===========================================================================
@@ -75,11 +71,9 @@ end
 
 
 Base.@kwdef struct CameraModelFull
-  ci::CameraCalibration = CameraCalibration()
-  ce::ArrayPartition    = ArrayPartition(SVector(0.,0.,0.),SMatrix{3,3}(1.,0.,0.,0.,1.,0.,0.,0.,1.)) # CameraExtrinsic()
+    ci::CameraCalibration = CameraCalibration()
+    ce::ArrayPartition = ArrayPartition(SVector(0.0, 0.0, 0.0), SMatrix{3, 3}(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)) # CameraExtrinsic()
 end
-
-
 
 
 #

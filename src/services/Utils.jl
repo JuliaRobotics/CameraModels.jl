@@ -1,5 +1,4 @@
-
-toNonhomogeneous(_Ph::AbstractVector) = SVector((_Ph[1:end-1]...,) ./ _Ph[end])
+toNonhomogeneous(_Ph::AbstractVector) = SVector((_Ph[1:(end - 1)]...,) ./ _Ph[end])
 
 
 """
@@ -7,15 +6,17 @@ toNonhomogeneous(_Ph::AbstractVector) = SVector((_Ph[1:end-1]...,) ./ _Ph[end])
 
 Constructor helper for creating a camera model.
 """
-function CameraSkewDistortion(width,height,fc,cc,skew,kc)
-    KK = [fc[1]      skew  cc[1];
-             0       fc[2] cc[2];
-             0		    0     1]
+function CameraSkewDistortion(width, height, fc, cc, skew, kc)
+    KK = [
+        fc[1]      skew  cc[1];
+        0       fc[2] cc[2];
+        0            0     1
+    ]
     # KK = [fc[1] skew*fc[1] cc[1];
     #          0       fc[2] cc[2];
     #          0		    0     1]
     Ki = inv(KK)
-    CameraModelandParameters(width,height,fc,cc,skew,kc,KK,Ki)
+    return CameraModelandParameters(width, height, fc, cc, skew, kc, KK, Ki)
 end
 
 """
@@ -57,12 +58,12 @@ DevNotes (Contributions welcome):
 - TODO check if LoopVectorization.jl tools like `@avx` help performance
 """
 function radialDistortion!(
-    cc::CameraCalibration{<:Real,N}, 
-    dest::AbstractMatrix, 
-    src::AbstractMatrix
-) where N
+        cc::CameraCalibration{<:Real, N},
+        dest::AbstractMatrix,
+        src::AbstractMatrix
+    ) where {N}
     # loop over entire image
-    for h_d in size(src,1), w_d in size(src,2)
+    for h_d in size(src, 1), w_d in size(src, 2)
         # temporary coordinates
         @inbounds h_ = h_d - cc.center[1]
         @inbounds w_ = w_d - cc.center[2]
@@ -71,31 +72,31 @@ function radialDistortion!(
         # calculate the denominator
         _denomin = 1
         @inbounds @fastmath for k in 1:N
-            _denomin += cc.kc[k]*(_radius2^k)
+            _denomin += cc.kc[k] * (_radius2^k)
         end
         # calculate the new 'undistorted' coordinates and set equal to incoming image
-        @inbounds @fastmath h_u = cc.center[1] + h_/_denomin
-        @inbounds @fastmath w_u = cc.center[2] + h_/_denomin
-        dest[h_u,w_u] = src[h_d,w_d]
+        @inbounds @fastmath h_u = cc.center[1] + h_ / _denomin
+        @inbounds @fastmath w_u = cc.center[2] + h_ / _denomin
+        dest[h_u, w_u] = src[h_d, w_d]
     end
-    nothing
+    return nothing
 end
 
 
-
-
 function intersectLineToPlane3D(
-    planenorm::AbstractVector{<:Real}, 
-    planepnt::AbstractVector{<:Real}, 
-    raydir::AbstractVector{<:Real}, 
-    raypnt::AbstractVector{<:Real}
-)
+        planenorm::AbstractVector{<:Real},
+        planepnt::AbstractVector{<:Real},
+        raydir::AbstractVector{<:Real},
+        raypnt::AbstractVector{<:Real}
+    )
     ndotu = dot(planenorm, raydir)
-    if ndotu ≈ 0 error("no intersection or line is within plane") end
+    if ndotu ≈ 0
+        error("no intersection or line is within plane")
+    end
 
-    w  = raypnt - planepnt
+    w = raypnt - planepnt
     si = -dot(planenorm, w) / ndotu
-    ψ  = w .+ si .* raydir .+ planepnt
+    ψ = w .+ si .* raydir .+ planepnt
     return ψ
 end
 
@@ -149,31 +150,30 @@ l_Forb = intersectRayToPlane(
 See also: `CameraModels.intersectLineToPlane3D`
 """
 function intersectRayToPlane(
-    c_H_a::AbstractMatrix{<:Real},
-    a_F::AbstractVector{<:Real},
-    l_nFL::AbstractVector{<:Real},
-    l_FL::AbstractVector{<:Real};
-    M = SpecialEuclidean(3),
-    R0 = [1 0 0; 0 1 0; 0 0 1.],
-    l_T_ex = ArrayPartition([0;0;0.], exp_lie(M.manifold[2], hat(M.manifold[2], R0, [0;0.2;0.]))),
-    ex_T_c = ArrayPartition([0;0;0.], [0 0 1; -1 0 0; 0 -1 0.]),
-)
+        c_H_a::AbstractMatrix{<:Real},
+        a_F::AbstractVector{<:Real},
+        l_nFL::AbstractVector{<:Real},
+        l_FL::AbstractVector{<:Real};
+        M = SpecialEuclidean(3),
+        R0 = [1 0 0; 0 1 0; 0 0 1.0],
+        l_T_ex = ArrayPartition([0;0;0.0], exp_lie(M.manifold[2], hat(M.manifold[2], R0, [0;0.2;0.0]))),
+        ex_T_c = ArrayPartition([0;0;0.0], [0 0 1; -1 0 0; 0 -1 0.0]),
+    )
     # camera in level (or camera to level) manifold element as ArrayPartition
     l_T_c = compose(M, l_T_ex, ex_T_c)
-    
+
     ## convert pixel location to ray in camera then level frame
     c_F = c_H_a * a_F
-    # unit vector ray direction from camera in camera coordinates 
+    # unit vector ray direction from camera in camera coordinates
     c_uV = c_F ./ norm(c_F)
     # get ray direction in level coordinates
     l_uV = l_T_c.x[2] * c_uV
-    
+
     # and ray position from camera center in level frame
     l_P = l_T_c.x[1]
-    
+
     ## planar floor surface projection
     l_nFL_ = l_nFL ./ norm(l_nFL)
-    
-    intersectLineToPlane3D(l_nFL_, l_FL, l_uV, l_P)  # returns intersect in local level.
-end
 
+    return intersectLineToPlane3D(l_nFL_, l_FL, l_uV, l_P)  # returns intersect in local level.
+end
