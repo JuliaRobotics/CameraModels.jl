@@ -1,6 +1,6 @@
 name = "CameraModels"
 uuid = "0d57b887-6120-40e6-8b8c-29d3116bc0c1"
-keywords = ["camera", "model", "pinhole", "distortion", "robotics", "images"]
+keywords = ["camera", "model", "pinhole", "distortion", "robotics", "images", "vision"]
 version = "0.2.4"
 
 [deps]
@@ -10,6 +10,7 @@ Manifolds = "1cead3c2-87b3-11e9-0ccd-23c62b72b94e"
 RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
 Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+# TODO : add LoopVectorization here
 
 [compat]
 DocStringExtensions = "0.8, 0.9"

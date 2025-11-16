@@ -7,6 +7,7 @@ using StaticArrays
 import Rotations as Rot_
 import Base: getindex, getproperty, show
 using RecursiveArrayTools: ArrayPartition
+using LoopVectorization: @tturbo
 
 # exports
 include("ExportAPI.jl")

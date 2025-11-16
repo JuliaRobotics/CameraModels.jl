@@ -51,36 +51,47 @@ yu = yc + (yd + yc) / (1 + K1*(r^2) + K2*(r^4) + ...)
 ```
 
 DevNotes (Contributions welcome):
-- TODO manage image clamping if `dest` is too small and data should be cropped out.
-- TODO buffer radii matrix for better reuse on repeat image size sequences
-- TODO dispatch with either CUDA.jl or AMDGPU.jl <:AbstractArray objects.
-- TODO use Tullio.jl with multithreading and GPU
-- TODO check if LoopVectorization.jl tools like `@avx` help performance
+- TODO : provide a GPU implementation
+         -> either via dispatch with AMDGPU and CUDA (should be avoided)
+         -> or using a vendor-agnostic code with KernelAbstractions.jl
 """
 function radialDistortion!(
         cc::CameraCalibration{<:Real, N},
         dest::AbstractMatrix,
         src::AbstractMatrix
     ) where {N}
-    # loop over entire image
-    for h_d in size(src, 1), w_d in size(src, 2)
-        # temporary coordinates
-        @inbounds h_ = h_d - cc.center[1]
-        @inbounds w_ = w_d - cc.center[2]
-        # calculate the radius from distortion center
-        _radius2 = h_^2 + w_^2
-        # calculate the denominator
-        _denomin = 1
-        @inbounds @fastmath for k in 1:N
-            _denomin += cc.kc[k] * (_radius2^k)
+
+    center = SVector{2}(cc.center)
+    k = ntuple(i -> cc.kc[i], N)
+    H, W = size(src)
+    c₁, c₂ = center
+
+    # pre-allocate buffers for the radius powers
+    buf = Vector{T}(undef, max(H, W))
+
+    @tturbo for h_d in 1:H, w_d in 1:W
+        h_ = h_d - c₁
+        w_ = w_d - c₂
+        r² = h_ * h_ + w_ * w_
+
+        num = one(T)
+        rⁿ = r²
+        @inbounds for i in 1:N
+            num += k[i] * rⁿ
+            rⁿ *= r²
         end
-        # calculate the new 'undistorted' coordinates and set equal to incoming image
-        @inbounds @fastmath h_u = cc.center[1] + h_ / _denomin
-        @inbounds @fastmath w_u = cc.center[2] + h_ / _denomin
-        dest[h_u, w_u] = src[h_d, w_d]
+
+        h_u = c₁ + h_ / num
+        w_u = c₂ + w_ / num
+
+        # nearest-neighbour lookup (round + clamp)
+        hi = clamp(round(Int, h_u), 1, H)
+        wi = clamp(round(Int, w_u), 1, W)
+        dest[h_d, w_d] = src[hi, wi]
     end
     return nothing
 end
+
 
 """
     intersectLineToPlane3D(planenorm, planepnt, raydir, raypnt) -> point
