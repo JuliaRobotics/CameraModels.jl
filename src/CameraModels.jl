@@ -1,7 +1,7 @@
 module CameraModels
 
 using LinearAlgebra
-using Manifolds
+using LieGroups
 using DocStringExtensions
 using StaticArrays
 import Rotations as Rot_
