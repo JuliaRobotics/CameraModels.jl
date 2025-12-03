@@ -4,14 +4,15 @@
 # using Revise
 using Test
 import CameraModels
-using Optim, Manifolds
+using Optim, LieGroups
 using StaticArrays
+using LieGroups: SpecialEuclideanProductPoint
 # using ManifoldDiff
 # import FiniteDifferences as FD
 
 ##
 
-M = SpecialEuclidean(3)
+M = SpecialEuclideanGroup(3; variant = :right)
 
 ##
 @testset "Multiview optimization of point in front of 2 cameras" begin
@@ -49,7 +50,7 @@ function projectPointFrom(cam, c_H_w, w_Ph)
 end
 
 function cameraResidual(cam, meas, M, w_T_c, w_Ph, κ=1000)
-  pred = projectPointFrom(cam, inv(affine_matrix(M,w_T_c)), w_Ph)
+  pred = projectPointFrom(cam, inv(convert(AbstractMatrix, SpecialEuclideanProductPoint(w_T_c))), w_Ph)
   # experimental cost function to try force bad reprojects in front of the camera during optimization
   κ*(abs(pred.depth) - pred.depth)^2 + (meas[1]-pred[1])^2 + (meas[2]-pred[2])^2
 end

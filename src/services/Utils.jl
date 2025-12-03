@@ -153,9 +153,8 @@ function intersectRayToPlane(
     a_F::AbstractVector{<:Real},
     l_nFL::AbstractVector{<:Real},
     l_FL::AbstractVector{<:Real};
-    M = SpecialEuclidean(3),
-    R0 = [1 0 0; 0 1 0; 0 0 1.],
-    l_T_ex = ArrayPartition([0;0;0.], exp_lie(M.manifold[2], hat(M.manifold[2], R0, [0;0.2;0.]))),
+    M = SpecialEuclideanGroup(3; variant = :right),
+    l_T_ex = ArrayPartition([0;0;0.], exp(SpecialOrthogonalGroup(3), hat(LieAlgebra(SpecialOrthogonalGroup(3)), [0;0.2;0.]))),
     ex_T_c = ArrayPartition([0;0;0.], [0 0 1; -1 0 0; 0 -1 0.]),
 )
     # camera in level (or camera to level) manifold element as ArrayPartition
