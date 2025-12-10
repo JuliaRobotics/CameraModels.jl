@@ -61,37 +61,58 @@ function radialDistortion!(
         src::AbstractMatrix
     ) where {N}
 
-    center = SVector{2}(cc.center)
-    k = ntuple(i -> cc.kc[i], N)
-    H, W = size(src)
-    c₁, c₂ = center
+    h, w = size(dest)
+    @assert size(src) == (h, w) "Sizes of src and dest must be the same"
+    @assert (cc.height, cc.width) == (h, w) "Calibration size mismatches image size"
+    inv_fx = inv(cc.K[1, 1])
+    inv_fy = inv(cc.K[2, 2])
+    cx = cc.K[1, 3]
+    cy = cc.K[2, 3]
+    k1, k2, p1, p2, k3 = cc.kc
+    @tturbo for u in 1:w
+        # Calculate x_norm once per column
+        x_norm = (u - cx) * inv_fx
+        x_sq = x_norm^2
 
-    # pre-allocate buffers for the radius powers
-    buf = Vector{T}(undef, max(H, W))
+        for v in 1:h
+            y_norm = (v - cy) * inv_fy
+            y_sq = y_norm^2
 
-    @tturbo for h_d in 1:H, w_d in 1:W
-        h_ = h_d - c₁
-        w_ = w_d - c₂
-        r² = h_ * h_ + w_ * w_
+            # --- Distortion Logic (Brown-Conrady) ---
+            r_sq = x_sq + y_sq
 
-        num = one(T)
-        rⁿ = r²
-        for i in 1:N
-            num += k[i] * rⁿ
-            rⁿ *= r²
+            # Radial component: (1 + k1*r^2 + k2*r^4 + k3*r^6)
+            radial_term = 1.0 + r_sq * (k1 + r_sq * (k2 + r_sq * k3))
+            #radial_term = evalpoly(r_sq, (1, k1, k2, k3))
+
+            # Tangential component
+            xy_2 = 2.0 * x_norm * y_norm
+            x_tangential = p1 * xy_2 + p2 * (r_sq + 2.0 * x_sq)
+            y_tangential = p1 * (r_sq + 2.0 * y_sq) + p2 * xy_2
+
+            # Distorted normalized coordinates
+            x_dist = x_norm * radial_term + x_tangential
+            y_dist = y_norm * radial_term + y_tangential
+
+            # --- Project back to pixel coordinates ---
+            # Nearest neighbor interpolation
+            u_src = round(Int, (x_dist * cc.K[1, 1]) + cx)
+            v_src = round(Int, (y_dist * cc.K[2, 2]) + cy)
+
+            # no bounds check -> not ideal
+
+            @inbounds dest[v, u] = src[v_src, u_src]
+
+            # with bounds check :
+            #if 1 <= u_src <= w && 1 <= v_src <= h
+            #else
+            #    # Pixel is out of bounds (black border)
+            #    @inbounds dest[v, u] = 0
+            #end
         end
-
-        h_u = c₁ + h_ / num
-        w_u = c₂ + w_ / num
-
-        # nearest-neighbour lookup (round + clamp)
-        hi = clamp(round(Int, h_u), 1, H)
-        wi = clamp(round(Int, w_u), 1, W)
-        dest[h_d, w_d] = src[hi, wi]
     end
     return nothing
 end
-
 
 """
     intersectLineToPlane3D(planenorm, planepnt, raydir, raypnt) -> point
@@ -130,7 +151,7 @@ end
 """
     $SIGNATURES
 
-Ray trace from pixel coords to a floor in local level reference which is assumed 
+Ray trace from pixel coords to a floor in local level reference which is assumed
 aligned with gravity.  Returns intersect in local level frame (coordinates).
 
 Notes
@@ -138,7 +159,7 @@ Notes
   - Just assume world is local level, i.e. `l_nFL = w_nFL` and `l_FL = w_FL`.
   - User must provide (assumed dynamic) local level transform via `l_T_ex` -- see example below!
 - Coordinate chain used is from ( pixel-array (a) --> camera (c) --> extrinsic (ex) --> level (l) )
-  - `c_H_a` from pixel-array to camera (as homography matrix) 
+  - `c_H_a` from pixel-array to camera (as homography matrix)
   - `a_F` feature in array pixel frame
   - `l_T_ex` extrinsic in body (or extrinsic to local level), SE3 Manifold element using ArrayPartition
   - `ex_T_c` camera in extrinsic (or camera to extrinsic)
@@ -155,7 +176,7 @@ ci,cj = 360,640  # assuming 720x1280 image
 c_H_a = [0 1 -cj; 1 0 -ci; 0 0 f] # camera matrix
 
 # body to extrinsic of camera -- e.g. camera looking down 0.2 and left 0.2
-# local level to body to extrinsic transform 
+# local level to body to extrinsic transform
 l_T_b = ArrayPartition([0;0;0.], R0)
 b_T_ex = ArrayPartition([0;0;0.], exp_lie(Mr, hat(Mr, R0, [0;0.2;0.2])))
 l_T_ex = compose(M, l_T_b, b_T_ex) # this is where body reference is folded in.
@@ -177,14 +198,14 @@ l_Forb = intersectRayToPlane(
 See also: `CameraModels.intersectLineToPlane3D`
 """
 function intersectRayToPlane(
-    c_H_a::AbstractMatrix{<:Real},
-    a_F::AbstractVector{<:Real},
-    l_nFL::AbstractVector{<:Real},
-    l_FL::AbstractVector{<:Real};
-    M = SpecialEuclideanGroup(3; variant = :right),
-    l_T_ex = ArrayPartition([0;0;0.], exp(SpecialOrthogonalGroup(3), hat(LieAlgebra(SpecialOrthogonalGroup(3)), [0;0.2;0.]))),
-    ex_T_c = ArrayPartition([0;0;0.], [0 0 1; -1 0 0; 0 -1 0.]),
-)
+        c_H_a::AbstractMatrix{<:Real},
+        a_F::AbstractVector{<:Real},
+        l_nFL::AbstractVector{<:Real},
+        l_FL::AbstractVector{<:Real};
+        M = SpecialEuclideanGroup(3; variant = :right),
+        l_T_ex = ArrayPartition([0;0;0.0], exp(SpecialOrthogonalGroup(3), hat(LieAlgebra(SpecialOrthogonalGroup(3)), [0;0.2;0.0]))),
+        ex_T_c = ArrayPartition([0;0;0.0], [0 0 1; -1 0 0; 0 -1 0.0]),
+    )
     # camera in level (or camera to level) manifold element as ArrayPartition
     l_T_c = compose(M, l_T_ex, ex_T_c)
 
