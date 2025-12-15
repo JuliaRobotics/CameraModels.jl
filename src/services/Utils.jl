@@ -1,5 +1,4 @@
-
-toNonhomogeneous(_Ph::AbstractVector) = SVector((_Ph[1:end-1]...,) ./ _Ph[end])
+toNonhomogeneous(_Ph::AbstractVector) = SVector((_Ph[1:(end - 1)]...,) ./ _Ph[end])
 
 
 """
@@ -7,15 +6,17 @@ toNonhomogeneous(_Ph::AbstractVector) = SVector((_Ph[1:end-1]...,) ./ _Ph[end])
 
 Constructor helper for creating a camera model.
 """
-function CameraSkewDistortion(width,height,fc,cc,skew,kc)
-    KK = [fc[1]      skew  cc[1];
-             0       fc[2] cc[2];
-             0		    0     1]
+function CameraSkewDistortion(width, height, fc, cc, skew, kc)
+    KK = [
+        fc[1]      skew  cc[1];
+        0       fc[2] cc[2];
+        0            0     1
+    ]
     # KK = [fc[1] skew*fc[1] cc[1];
     #          0       fc[2] cc[2];
     #          0		    0     1]
     Ki = inv(KK)
-    CameraModelandParameters(width,height,fc,cc,skew,kc,KK,Ki)
+    return CameraModelandParameters(width, height, fc, cc, skew, kc, KK, Ki)
 end
 
 """
@@ -50,59 +51,107 @@ yu = yc + (yd + yc) / (1 + K1*(r^2) + K2*(r^4) + ...)
 ```
 
 DevNotes (Contributions welcome):
-- TODO manage image clamping if `dest` is too small and data should be cropped out.
-- TODO buffer radii matrix for better reuse on repeat image size sequences
-- TODO dispatch with either CUDA.jl or AMDGPU.jl <:AbstractArray objects.
-- TODO use Tullio.jl with multithreading and GPU
-- TODO check if LoopVectorization.jl tools like `@avx` help performance
+- TODO : provide a GPU implementation
+         -> either via dispatch with AMDGPU and CUDA (should be avoided)
+         -> or using a vendor-agnostic code with KernelAbstractions.jl
 """
 function radialDistortion!(
-    cc::CameraCalibration{<:Real,N}, 
-    dest::AbstractMatrix, 
-    src::AbstractMatrix
-) where N
-    # loop over entire image
-    for h_d in size(src,1), w_d in size(src,2)
-        # temporary coordinates
-        @inbounds h_ = h_d - cc.center[1]
-        @inbounds w_ = w_d - cc.center[2]
-        # calculate the radius from distortion center
-        _radius2 = h_^2 + w_^2
-        # calculate the denominator
-        _denomin = 1
-        @inbounds @fastmath for k in 1:N
-            _denomin += cc.kc[k]*(_radius2^k)
+        cc::CameraCalibration{<:Real, N},
+        dest::AbstractMatrix,
+        src::AbstractMatrix
+    ) where {N}
+
+    h, w = size(dest)
+    @assert size(src) == (h, w) "Sizes of src and dest must be the same"
+    @assert (cc.height, cc.width) == (h, w) "Calibration size mismatches image size"
+    inv_fx = inv(cc.K[1, 1])
+    inv_fy = inv(cc.K[2, 2])
+    cx = cc.K[1, 3]
+    cy = cc.K[2, 3]
+    k1, k2, p1, p2, k3 = cc.kc
+    @tturbo for u in 1:w
+        # Calculate x_norm once per column
+        x_norm = (u - cx) * inv_fx
+        x_sq = x_norm^2
+
+        for v in 1:h
+            y_norm = (v - cy) * inv_fy
+            y_sq = y_norm^2
+
+            # --- Distortion Logic (Brown-Conrady) ---
+            r_sq = x_sq + y_sq
+
+            # Radial component: (1 + k1*r^2 + k2*r^4 + k3*r^6)
+            radial_term = 1.0 + r_sq * (k1 + r_sq * (k2 + r_sq * k3))
+            #radial_term = evalpoly(r_sq, (1, k1, k2, k3))
+
+            # Tangential component
+            xy_2 = 2.0 * x_norm * y_norm
+            x_tangential = p1 * xy_2 + p2 * (r_sq + 2.0 * x_sq)
+            y_tangential = p1 * (r_sq + 2.0 * y_sq) + p2 * xy_2
+
+            # Distorted normalized coordinates
+            x_dist = x_norm * radial_term + x_tangential
+            y_dist = y_norm * radial_term + y_tangential
+
+            # --- Project back to pixel coordinates ---
+            # Nearest neighbor interpolation
+            u_src = round(Int, (x_dist * cc.K[1, 1]) + cx)
+            v_src = round(Int, (y_dist * cc.K[2, 2]) + cy)
+
+            # no bounds check -> not ideal
+
+            @inbounds dest[v, u] = src[v_src, u_src]
+
+            # with bounds check :
+            #if 1 <= u_src <= w && 1 <= v_src <= h
+            #else
+            #    # Pixel is out of bounds (black border)
+            #    @inbounds dest[v, u] = 0
+            #end
         end
-        # calculate the new 'undistorted' coordinates and set equal to incoming image
-        @inbounds @fastmath h_u = cc.center[1] + h_/_denomin
-        @inbounds @fastmath w_u = cc.center[2] + h_/_denomin
-        dest[h_u,w_u] = src[h_d,w_d]
     end
-    nothing
+    return nothing
 end
 
+"""
+    intersectLineToPlane3D(planenorm, planepnt, raydir, raypnt) -> point
 
+Compute the unique intersection point between an infinite 3-D line (ray) and a plane.
 
+# Arguments
+- `planenorm::AbstractVector{<:Real}` – plane normal vector (need not be unit-length)
+- `planepnt::AbstractVector{<:Real}` – any point lying on the plane
+- `raydir::AbstractVector{<:Real}` – direction vector of the line (need not be unit-length)
+- `raypnt::AbstractVector{<:Real}` – any point lying on the line
 
+# Returns
+- `ψ::Vector{<:Real}` – coordinates of the intersection point
+
+# Throws
+- `ErrorException` if the line is parallel to the plane (no intersection or line lies in plane).
+"""
 function intersectLineToPlane3D(
-    planenorm::AbstractVector{<:Real}, 
-    planepnt::AbstractVector{<:Real}, 
-    raydir::AbstractVector{<:Real}, 
-    raypnt::AbstractVector{<:Real}
-)
-    ndotu = dot(planenorm, raydir)
-    if ndotu ≈ 0 error("no intersection or line is within plane") end
+        planenorm::AbstractVector{<:Real},
+        planepnt::AbstractVector{<:Real},
+        raydir::AbstractVector{<:Real},
+        raypnt::AbstractVector{<:Real}
+    )
+    n_dot_u = dot(planenorm, raydir)
+    if n_dot_u ≈ 0
+        error("no intersection or line is within plane")
+    end
 
-    w  = raypnt - planepnt
-    si = -dot(planenorm, w) / ndotu
-    ψ  = w .+ si .* raydir .+ planepnt
+    w = raypnt - planepnt
+    si = -dot(planenorm, w) / n_dot_u # ray parameter at intersection
+    ψ = w .+ si .* raydir .+ planepnt
     return ψ
 end
 
 """
     $SIGNATURES
 
-Ray trace from pixel coords to a floor in local level reference which is assumed 
+Ray trace from pixel coords to a floor in local level reference which is assumed
 aligned with gravity.  Returns intersect in local level frame (coordinates).
 
 Notes
@@ -110,7 +159,7 @@ Notes
   - Just assume world is local level, i.e. `l_nFL = w_nFL` and `l_FL = w_FL`.
   - User must provide (assumed dynamic) local level transform via `l_T_ex` -- see example below!
 - Coordinate chain used is from ( pixel-array (a) --> camera (c) --> extrinsic (ex) --> level (l) )
-  - `c_H_a` from pixel-array to camera (as homography matrix) 
+  - `c_H_a` from pixel-array to camera (as homography matrix)
   - `a_F` feature in array pixel frame
   - `l_T_ex` extrinsic in body (or extrinsic to local level), SE3 Manifold element using ArrayPartition
   - `ex_T_c` camera in extrinsic (or camera to extrinsic)
@@ -127,7 +176,7 @@ ci,cj = 360,640  # assuming 720x1280 image
 c_H_a = [0 1 -cj; 1 0 -ci; 0 0 f] # camera matrix
 
 # body to extrinsic of camera -- e.g. camera looking down 0.2 and left 0.2
-# local level to body to extrinsic transform 
+# local level to body to extrinsic transform
 l_T_b = ArrayPartition([0;0;0.], R0)
 b_T_ex = ArrayPartition([0;0;0.], exp_lie(Mr, hat(Mr, R0, [0;0.2;0.2])))
 l_T_ex = compose(M, l_T_b, b_T_ex) # this is where body reference is folded in.
@@ -149,30 +198,29 @@ l_Forb = intersectRayToPlane(
 See also: `CameraModels.intersectLineToPlane3D`
 """
 function intersectRayToPlane(
-    c_H_a::AbstractMatrix{<:Real},
-    a_F::AbstractVector{<:Real},
-    l_nFL::AbstractVector{<:Real},
-    l_FL::AbstractVector{<:Real};
-    M = SpecialEuclideanGroup(3; variant = :right),
-    l_T_ex = ArrayPartition([0;0;0.], exp(SpecialOrthogonalGroup(3), hat(LieAlgebra(SpecialOrthogonalGroup(3)), [0;0.2;0.]))),
-    ex_T_c = ArrayPartition([0;0;0.], [0 0 1; -1 0 0; 0 -1 0.]),
-)
+        c_H_a::AbstractMatrix{<:Real},
+        a_F::AbstractVector{<:Real},
+        l_nFL::AbstractVector{<:Real},
+        l_FL::AbstractVector{<:Real};
+        M = SpecialEuclideanGroup(3; variant = :right),
+        l_T_ex = ArrayPartition([0;0;0.0], exp(SpecialOrthogonalGroup(3), hat(LieAlgebra(SpecialOrthogonalGroup(3)), [0;0.2;0.0]))),
+        ex_T_c = ArrayPartition([0;0;0.0], [0 0 1; -1 0 0; 0 -1 0.0]),
+    )
     # camera in level (or camera to level) manifold element as ArrayPartition
     l_T_c = compose(M, l_T_ex, ex_T_c)
-    
+
     ## convert pixel location to ray in camera then level frame
     c_F = c_H_a * a_F
-    # unit vector ray direction from camera in camera coordinates 
+    # unit vector ray direction from camera in camera coordinates
     c_uV = c_F ./ norm(c_F)
     # get ray direction in level coordinates
     l_uV = l_T_c.x[2] * c_uV
-    
+
     # and ray position from camera center in level frame
     l_P = l_T_c.x[1]
-    
+
     ## planar floor surface projection
     l_nFL_ = l_nFL ./ norm(l_nFL)
-    
-    intersectLineToPlane3D(l_nFL_, l_FL, l_uV, l_P)  # returns intersect in local level.
-end
 
+    return intersectLineToPlane3D(l_nFL_, l_FL, l_uV, l_P)  # returns intersect in local level.
+end

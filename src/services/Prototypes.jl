@@ -1,4 +1,3 @@
-
 """
     origin(ray)
 
@@ -65,4 +64,3 @@ function lookdirection end
 Return the updirection of this camera model.
 """
 function updirection end
-
