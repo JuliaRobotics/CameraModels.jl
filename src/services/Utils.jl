@@ -1,22 +1,26 @@
-toNonhomogeneous(_Ph::AbstractVector) = SVector((_Ph[1:(end - 1)]...,) ./ _Ph[end])
+"""
+    $SIGNATURES
 
+Converts a homogeneous point to a non-homogeneous point, i.e. divides by the last element.
+"""
+function toNonhomogeneous(_Ph::AbstractVector)
+    if length(_Ph) == 4
+        return Point3(_Ph[1]/_Ph[4], _Ph[2]/_Ph[4], _Ph[3]/_Ph[4])
+    end
+    return Point2(_Ph[1]/_Ph[3], _Ph[2]/_Ph[3])
+end
 
 """
-    CameraModel(width,height,fc,cc,skew,kc)
+    $SIGNATURES
 
 Constructor helper for creating a camera model.
 """
 function CameraSkewDistortion(width, height, fc, cc, skew, kc)
-    KK = [
-        fc[1]      skew  cc[1];
-        0       fc[2] cc[2];
-        0            0     1
-    ]
-    # KK = [fc[1] skew*fc[1] cc[1];
-    #          0       fc[2] cc[2];
-    #          0		    0     1]
-    Ki = inv(KK)
-    return CameraModelandParameters(width, height, fc, cc, skew, kc, KK, Ki)
+    K = Mat{3, 3}(
+        fc[1], 0.0, 0.0,
+        skew,  fc[2], 0.0,
+        cc[1], cc[2], 1.0)
+    return CameraCalibration(;width, height, K, kc=SVector(float.(kc)...))
 end
 
 """

@@ -1,7 +1,7 @@
 
 using LinearAlgebra
 
-function run_test_bench(model::C, pixel_accuracy::Float64 = 1e-5, ray_accuracy::Float64 = 1e-4) where C <: CameraModel
+function run_test_bench(model::C, pixel_accuracy::Float64 = 1e-5, ray_accuracy::Float64 = 1e-4) where C <: AbstractCameraModel
 
     @testset "Check basics and interface implementation for $(C)." begin
 
@@ -23,20 +23,23 @@ function run_test_bench(model::C, pixel_accuracy::Float64 = 1e-5, ray_accuracy::
         some_pixel_location = image_centre + slight_offset
 
         # Get the ray that belongs to that pixel.
-        ray = pixel2ray(model, some_pixel_location)
+        # backproject returns a direction vector, and we assume origin is (0,0,0) for now if not specified
+        # actually Ray is defined as struct Ray origin::Point3 direction::Vector3
+        dir = backproject(model, some_pixel_location)
+        ray = Ray(Point3(0,0,0), dir)
         
         # Generate a 3D point along that ray.
         point = CameraModels.origin(ray) + 4.2 .* CameraModels.direction(ray)
 
         println(model)
 
-        # Some models might not implement point2pixel.
+        # Some models might not implement project.
         if canreproject(model)
-            reprojection = point2pixel(model, point) # CameraModels.project(model, [-point[2]; -point[3]; point[1]]) # point2pixel(model, point)
+            reprojection = project(model, point) 
             @test_broken some_pixel_location[1] ≈ reprojection[1] atol = pixel_accuracy
             @test_broken some_pixel_location[2] ≈ reprojection[2] atol = pixel_accuracy
         else 
-            @info "point2pixel not implemented for $(C)."
+            @info "project not implemented for $(C)."
         end
 
     end

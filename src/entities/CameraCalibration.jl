@@ -63,17 +63,3 @@ Base.@kwdef mutable struct CameraCalibrationMutable{R <: Real, N} <: AbstractCam
     """ inverse of a 3x3 camera calibration matrix """
     Ki::MMatrix{3, 3, R} = inv(K)
 end
-
-
-## ===========================================================================
-## Legacy types that are not so easy to consolidate (not exported) DO NOT USE
-## ===========================================================================
-
-
-Base.@kwdef struct CameraModelFull
-    ci::CameraCalibration = CameraCalibration()
-    ce::ArrayPartition = ArrayPartition(SVector(0.0, 0.0, 0.0), SMatrix{3, 3}(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)) # CameraExtrinsic()
-end
-
-
-#

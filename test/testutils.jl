@@ -81,8 +81,8 @@ end
 
 
     src_mat = rand(Float32, 720, 1280)
-    dst_mat = similar(src_mat)
+    dst_mat = deepcopy(src_mat)
 
     CameraModels.radialDistortion!(test_camera, dst_mat, src_mat)
-
+    @test dst_mat != src_mat
 end

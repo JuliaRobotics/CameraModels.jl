@@ -1,7 +1,4 @@
-
-
-
-## Tests from SensorFeatureTracking.jl
+# Tests from SensorFeatureTracking.jl
 
 @testset "Test CameraSkewDistortion" begin
 
@@ -18,5 +15,3 @@ cam = CameraSkewDistortion(640,480,[focald, focald],[cv, cu], 0., [0])
 
 
 end
-
-#

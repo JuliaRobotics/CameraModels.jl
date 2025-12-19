@@ -1,28 +1,25 @@
 module CameraModels
 
-using LinearAlgebra
-using LieGroups
-using DocStringExtensions
-using StaticArrays
-import Rotations as Rot_
-import Base: getindex, getproperty, show
+using 
+    LinearAlgebra,
+    LieGroups,
+    DocStringExtensions,
+    StaticArrays,
+    GeometryBasics
+
+
+    
 using RecursiveArrayTools: ArrayPartition
 using LoopVectorization: @tturbo
 
-# exports
-include("ExportAPI.jl")
+import Rotations as Rot_
+import Base: getindex, getproperty, show
 
-# data types
+
+include("ExportAPI.jl")
 include("entities/GeneralTypes.jl")
 include("entities/CameraCalibration.jl")
-
 include("services/CameraCalibration.jl")
-
-# legacy implementations
-include("Deprecated.jl")
-
-# function logic
-include("services/Prototypes.jl")
 include("services/CameraServices.jl")
 include("services/Utils.jl")
 

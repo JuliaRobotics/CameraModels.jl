@@ -1,41 +1,136 @@
-## consolidated functions, first baseline
+"""
+    origin(ray)
 
-## =========================================================================================
-## Parameter functions
-
-## From yakir12/CameraModels.jl
+Return the origin of the ray as a `Vector3`.
+"""
 origin(vector::Union{<:AbstractVector{<:Real}, <:Vector3}) = origin3d
 origin(ray::Ray) = ray.origin
-lookdirection(cameramodel::AbstractCameraModel) = SVector{3}(0, 1, 0)
-updirection(cameramodel::AbstractCameraModel) = SVector{3}(0, 0, 1)
+
+"""
+    lookdirection(camera::AbstractCameraModel)
+
+Return the lookdirection of this camera model.
+"""
+lookdirection(cameramodel::AbstractCameraModel) = Vector3(0, 1, 0)
+
+"""
+    updirection(camera::AbstractCameraModel)
+
+Return the updirection of this camera model.
+"""
+updirection(cameramodel::AbstractCameraModel) = Vector3(0, 0, 1)
+
+"""
+    width(model::AbstractCameraModel)
+
+Returns the width (columns) of the camera sensor.
+"""
 width(cameramodel::AbstractCameraModel) = cameramodel.width
+
+"""
+    height(model::AbstractCameraModel)
+
+Returns the height (rows) of the camera sensor.
+"""
 height(cameramodel::AbstractCameraModel) = cameramodel.height
+
+"""
+    direction(ray)
+
+Return the direction of the ray as a `Vector3`.
+"""
 direction(vector::Union{<:AbstractVector{<:Real}, <:Vector3}) = vector
 direction(ray::Ray) = ray.direction
-sensorsize(cameramodel::AbstractCameraModel) = SVector{2}(width(cameramodel), height(cameramodel))
 
-## From JuliaRobotics/Caesar.jl
+"""
+    sensorsize(model::AbstractCameraModel)
+
+Return the size of the camera sensor. By default calling out to width(model) and height(model) to build a Vec{2}
+
+`sensorsize(cameramodel::AbstractCameraModel) = Vec{2}(width(cameramodel), height(cameramodel))`
+"""
+sensorsize(cameramodel::AbstractCameraModel) = Vec{2}(width(cameramodel), height(cameramodel))
+
+
+"""
+    f_w(pc::AbstractCameraModel)
+
+Return the focal length in the width direction.
+"""
 f_w(pc::AbstractCameraModel) = pc.K[1, 1]
+
+"""
+    f_h(pc::AbstractCameraModel)
+
+Return the focal length in the height direction.
+"""
 f_h(pc::AbstractCameraModel) = pc.K[2, 2]
+
+"""
+    shear(pc::AbstractCameraModel)
+
+Return the shear parameter of the camera.
+"""
 shear(pc::AbstractCameraModel) = pc.K[1, 2]
+
+"""
+    pp_w(pc::AbstractCameraModel)
+
+Return the principal point in the width direction.
+"""
 pp_w(pc::AbstractCameraModel) = pc.K[1, 3]
+
+"""
+    pp_h(pc::AbstractCameraModel)
+
+Return the principal point in the height direction.
+"""
 pp_h(pc::AbstractCameraModel) = pc.K[2, 3]
 
+"""
+    set_f_w!(pc::CameraCalibrationMutable, val::Real)
+
+Set the focal length in the width direction.
+"""
 set_f_w!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1, 1] = val)
+
+"""
+    set_f_h!(pc::CameraCalibrationMutable, val::Real)
+
+Set the focal length in the height direction.
+"""
 set_f_h!(pc::CameraCalibrationMutable, val::Real) = (pc.K[2, 2] = val)
+
+"""
+    set_shear!(pc::CameraCalibrationMutable, val::Real)
+
+Set the shear parameter of the camera.
+"""
 set_shear!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1, 2] = val)
+
+"""
+    set_pp_w!(pc::CameraCalibrationMutable, val::Real)
+
+Set the principal point in the width direction.
+"""
 set_pp_w!(pc::CameraCalibrationMutable, val::Real) = (pc.K[1, 3] = val)
+
+"""
+    set_pp_h!(pc::CameraCalibrationMutable, val::Real)
+
+Set the principal point in the height direction.
+"""
 set_pp_h!(pc::CameraCalibrationMutable, val::Real) = (pc.K[2, 3] = val)
 
 """
-    canreproject(camera::CameraModel)
+    canreproject(camera::AbstractCameraModel)
 
-Confirms if point2pixel is implemented for this camera model.
+Confirms if project is implemented for this camera model.
 """
 canreproject(camera::AbstractCameraModel) = true
 
 
-## computational functions
+## Computational functions
 
 
 ## =========================================================================================
@@ -60,7 +155,7 @@ function undistortPoint(cam::CameraCalibration, xy, iter_num = 3)
         x = (x0 - delta_x) * k_inv
         y = (y0 - delta_y) * k_inv
     end
-    return SA[x * fx + cx; y * fy + cy]
+    return Point(x * fx + cx, y * fy + cy)
 end
 
 
@@ -68,11 +163,9 @@ end
 ## FROM SCENE IN FRONT OF CAMERA TO IMAGE -- I.E. PROJECT
 ## =========================================================================================
 
-
-## From JuliaRobotics/SensorFeatureTracking.jl
 function project!(
         ret::AbstractVector{<:Real},
-        ci::CameraCalibration, #CameraIntrinsic,
+        ci::CameraCalibration,
         c_T_r::ArrayPartition,
         r_P::AbstractVector{<:Real}
     )
@@ -86,57 +179,47 @@ end
 
 Project a world scene onto an image.
 
-Return a transformation that converts real-world coordinates
-to camera coordinates. This currently ignores any tangential 
-distortion between the lens and the image plane.
+Returns the pixel location onto which the 3D coordinate `r_P` is projected.
+This currently ignores any tangential distortion between the lens and the image plane.
 
 Notes
-- `r_P` is a point in reference frame tranformed the camera's reference frame:
+- `r_P` is a point in reference frame transformed the camera's reference frame:
   - `c_P = c_T_r * r_P`
-
-Deprecates:
-- yakir12: `point2pixel`: @deprecate point2pixel(model, pt) project(model, pt[[1;3;2]])
 
 Also see: [`backproject`](@ref)
 """
 function project(
         model::AbstractCameraModel,
         r_P::Union{<:AbstractVector{<:Real}, <:Point3};
-        c_T_r = ArrayPartition(SVector(0.0, 0.0, 0.0), SMatrix{3, 3}(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0))
+        c_T_r = ArrayPartition(Vector3(0.0, 0.0, 0.0), Mat{3,3}(1.0*I(3)))
     )
-    #
     ret = MVector(0.0, 0.0)
     return project!(ret, model, c_T_r, r_P)
-    # column = pp_w(model) + f_w(model) * c_P[1] / c_P[3]
-    # row = pp_h(model) - f_h(model) * c_P[2] / c_P[3]
-    # return PixelIndex(column, row)
 end
 
-project!(
-    ret::AbstractVector{<:Real},
-    cm::CameraModelFull,
-    pt::AbstractVector{<:Real}
-) = project!(ret, cm.ci, cm.ce, pt)
 
+"""
+    $SIGNATURES
 
-## homogeneous point coords xyzw (stereo cameras)
-# xyzw are in the camera frame (c_), i.e. x-columns, y-rows, z-forward
+Project a 3D point in homogeneous coordinates `c_Ph` (camera frame) to a `PixelIndex`.
+"""
 function projectHomogeneous(
-        cam::AbstractCameraModel,
-        c_Ph::AbstractVector,
-    )
-    # left cam
-    x, y, z, w = (c_Ph...,)
-    fx_z = f_w(cam) / z
-    fy_z = f_h(cam) / z
-    col = x * fx_z + pp_w(cam) # add center to get PixelIndex
-    row = y * fy_z + pp_h(cam)
-    # infront or behind
+    cam::AbstractCameraModel,
+    c_Ph::AbstractVector{<:Real}
+)
+    x, y, z, w = c_Ph
+    
+    # Project to image plane
+    inv_z = 1 / z
+    col = x * f_w(cam) * inv_z + pp_w(cam)
+    row = y * f_h(cam) * inv_z + pp_h(cam)
+    
+    # Depth and validity (point must be in front of camera)
     depth = z / w
-    return PixelIndex(row, col; depth, valid = (w == 0&&0 < z) || 0 < depth)
+    valid = (w == 0 && z > 0) || depth > 0
+    
+    return PixelIndex(col, row; depth, valid)
 end
-# # right cam
-# u2 = (x - w*baseline) * fz + center[1]
 
 
 ## =========================================================================================
@@ -149,12 +232,8 @@ end
 
 Backproject from an image into a world scene.
 
-Return a transformation that converts real-world coordinates
-to camera coordinates. This currently ignores any tangential 
-distortion between the lens and the image plane.
-
-Deprecates:
-- yakir12: `pixel2ray`: @deprecate pixel2ray(model, px) backproject(model, px)[[1;3;2]]
+Returns the ray in space (direction vector) corresponding to this `pixelIndex`.
+This currently ignores any tangential distortion between the lens and the image plane.
 
 Also see: [`project`](@ref)
 """
@@ -167,6 +246,8 @@ function backproject(
     row = -(px_coord[2] - pp_h(model)) / f_h(model)
     return Vector3(col, row, 1)
 end
+
+
 # # camera measurements (u,v), (u2,v)
 # lx = (u-center[1])*baseline
 # ly = (v-center[2])*baseline
@@ -187,7 +268,7 @@ end
 function cameraResidual!(
         res::AbstractVector{<:Real},
         z::AbstractVector{<:Real},
-        ci::CameraCalibration, #CameraIntrinsic,
+        ci::CameraCalibration,
         ce::ArrayPartition,
         pt::Union{PixelIndex, <:AbstractVector{<:Real}},
     )
@@ -198,5 +279,3 @@ function cameraResidual!(
     return nothing
 end
 
-
-##
