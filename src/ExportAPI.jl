@@ -1,21 +1,45 @@
+# Abstract type
 export AbstractCameraModel
 
-export CameraCalibration, CameraCalibrationMutable
+# Camera structures
+export
+    CameraCalibration,
+    CameraCalibrationMutable
 
-export toNonhomogeneous
-export CameraSkewDistortion
 
-export undistortPoint
-export Ray, PixelIndex
-export canreproject, sensorsize #, origin, direction,
-export project, projectHomogeneous
-export backproject, backprojectHomogeneous
-export pp_w, pp_h, f_w, f_h
+export
+    toNonhomogeneous,
+    undistortPoint,
+    Ray,
+    PixelIndex,
+    canreproject,
+    sensorsize,
+    project,
+    projectHomogeneous,
+    backproject,
+    backprojectHomogeneous,
+    pp_w,
+    pp_h,
+    f_w,
+    f_h,
+    shear,
+    set_f_h!,
+    set_f_w!,
+    set_pp_h!,
+    set_pp_w!,
+    width,
+    height,
+    direction,
+    lookdirection,
+    updirection,
+    canreproject,
+    intersectLineToPlane3D,
+    intersectRayToPlane
 
-export lookdirection, updirection #, columns, rows
 
-export intersectLineToPlane3D, intersectRayToPlane
-
-# suppressing super general signatures likely to have conflicts.
-# TODO adopt common Julia definition for points and vectors, maybe something from JuliaGeometry, etc.
-export Vector3, Vector2, Point3
+# Elemnents from JuliaGeometry/GeometryBasics
+export
+    Vector2,
+    Vector3,
+    Point3,
+    origin3d # Origin Point3

@@ -26,11 +26,16 @@ The image convention is intended to be the best compromise between [JuliaImages'
 
 ## Camera frame and pixel indices
 
-![Images Convention](docs/imgs/JuliaRoboticsImgConv.png)
+<!-- ![Images Convention](docs/imgs/JuliaRoboticsImgConv.png) -->
+![Images Convention](docs/imgs/diagram1.svg)
+![Image array diagram](docs/imgs/diagram2.svg)
+
 
 ## Robotics reference to camera frame
 
-![Image m_T_c](docs/imgs/m_T_c.png)
+<!--![Image m_T_c](docs/imgs/m_T_c.png)-->
+![Image m_T_c](docs/imgs/diagram3.svg)
+
 
 # Roadmap
 

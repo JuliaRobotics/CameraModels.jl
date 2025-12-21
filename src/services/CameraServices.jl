@@ -45,7 +45,8 @@ direction(ray::Ray) = ray.direction
 """
     sensorsize(model::AbstractCameraModel)
 
-Return the size of the camera sensor. By default calling out to width(model) and height(model) to build a Vec{2}
+Return the size of the camera sensor.
+By default calling out to width(model) and height(model) to build a Vec{2}
 
 `sensorsize(cameramodel::AbstractCameraModel) = Vec{2}(width(cameramodel), height(cameramodel))`
 """
@@ -137,19 +138,31 @@ canreproject(camera::AbstractCameraModel) = true
 ## FROM SCENE IN FRONT OF CAMERA TO IMAGE -- I.E. PROJECT
 ## =========================================================================================
 
+"""
+    $(SIGNATURES)
 
-function undistortPoint(cam::CameraCalibration, xy, iter_num = 3)
+Undistort a point using the camera calibration parameters.
+
+Parameters :
+- `cam`: camera calibration
+- `xy`: pixel coordinates
+- `iter_num`: number of iterations for the undistortion process
+"""
+function undistortPoint(
+        cam::CameraCalibration,
+        xy,
+        iter_num = 3
+    )
     k1, k2, p1, p2, k3 = cam.kc[1:5]
     fx, fy = f_w(cam), f_h(cam) # cam.K[1, 1], cam.K[2, 2]
     cx, cy = pp_w(cam), pp_h(cam) # cam.K[1:2, 3]
     x, y = xy[1], xy[2]
     x = (x - cx) / fx
-    x0 = x
     y = (y - cy) / fy
-    y0 = y
+    x0, y0 = x, y
     for _ in 1:iter_num
         r2 = x^2 + y^2
-        k_inv = 1 / (1 + k1 * r2 + k2 * r2^2 + k3 * r2^3)
+        k_inv = inv((1 + k1 * r2 + k2 * r2^2 + k3 * r2^3))
         delta_x = 2 * p1 * x * y + p2 * (r2 + 2 * x^2)
         delta_y = p1 * (r2 + 2 * y^2) + 2 * p2 * x * y
         x = (x0 - delta_x) * k_inv
@@ -163,6 +176,18 @@ end
 ## FROM SCENE IN FRONT OF CAMERA TO IMAGE -- I.E. PROJECT
 ## =========================================================================================
 
+"""
+    $(SIGNATURES)
+
+Parameters :
+    `ret::AbstractVector{<:Real}`: The output vector to store the projected pixel coordinates.
+    `ci::CameraCalibration`: The camera calibration parameters.
+    `c_T_r::ArrayPartition`: The transformation matrix from camera frame to reference frame.
+    `r_P::AbstractVector{<:Real}`: The 3D point in homogeneous coordinates (camera frame).
+
+
+Project a 3D point in homogeneous coordinates `r_P` (camera frame) to a `PixelIndex`.
+"""
 function project!(
         ret::AbstractVector{<:Real},
         ci::CameraCalibration,
@@ -175,7 +200,7 @@ function project!(
 end
 
 """
-    $SIGNATURES
+    $(SIGNATURES)
 
 Project a world scene onto an image.
 
@@ -191,7 +216,7 @@ Also see: [`backproject`](@ref)
 function project(
         model::AbstractCameraModel,
         r_P::Union{<:AbstractVector{<:Real}, <:Point3};
-        c_T_r = ArrayPartition(Vector3(0.0, 0.0, 0.0), Mat{3,3}(1.0*I(3)))
+        c_T_r = ArrayPartition(Vector3(0.0, 0.0, 0.0), SMatrix{3, 3}(1.0 * I(3)))
     )
     ret = MVector(0.0, 0.0)
     return project!(ret, model, c_T_r, r_P)
@@ -199,25 +224,25 @@ end
 
 
 """
-    $SIGNATURES
+    $(SIGNATURES)
 
 Project a 3D point in homogeneous coordinates `c_Ph` (camera frame) to a `PixelIndex`.
 """
 function projectHomogeneous(
-    cam::AbstractCameraModel,
-    c_Ph::AbstractVector{<:Real}
-)
+        cam::AbstractCameraModel,
+        c_Ph::AbstractVector{<:Real}
+    )
     x, y, z, w = c_Ph
-    
+
     # Project to image plane
     inv_z = 1 / z
     col = x * f_w(cam) * inv_z + pp_w(cam)
     row = y * f_h(cam) * inv_z + pp_h(cam)
-    
+
     # Depth and validity (point must be in front of camera)
     depth = z / w
     valid = (w == 0 && z > 0) || depth > 0
-    
+
     return PixelIndex(col, row; depth, valid)
 end
 
@@ -228,7 +253,7 @@ end
 
 
 """
-    $SIGNATURES
+    $(SIGNATURES)
 
 Backproject from an image into a world scene.
 
@@ -241,30 +266,28 @@ function backproject(
         model::AbstractCameraModel,
         px_coord::Union{<:AbstractVector{<:Real}, <:PixelIndex}
     )
-    #
     col = (px_coord[1] - pp_w(model)) / f_w(model)
     row = -(px_coord[2] - pp_h(model)) / f_h(model)
     return Vector3(col, row, 1)
 end
 
 
-# # camera measurements (u,v), (u2,v)
-# lx = (u-center[1])*baseline
-# ly = (v-center[2])*baseline
-# lz = _f*baseline
-# lw = u - u2
-# lw<0 ? @warn("backprojecting negative disparity\n") : nothing
-# # homogeneous point coords
-# return (lz, lx, ly, lw)
-
-
 ## =========================================================================================
 ## RESIDUAL FUNCTION FOR OPTIMIZATION OR LOSS
 ## =========================================================================================
 
+"""
+    $(SIGNATURES)
 
-# pinhole camera model
-# (x, y)/f = (X, Y)/Z
+Compute the residual between the observed pixel coordinates and the projected pixel coordinates.
+
+Parameters :
+- `res`: residual vector to be filled
+- `z`: depth vector
+- `ci`: camera calibration (camera intrinsic)
+- `ce`: camera extrinsics
+- `pt`: pixel index or vector of pixel coordinates
+"""
 function cameraResidual!(
         res::AbstractVector{<:Real},
         z::AbstractVector{<:Real},
@@ -278,4 +301,3 @@ function cameraResidual!(
     res[1:2] += z[1:2]
     return nothing
 end
-
