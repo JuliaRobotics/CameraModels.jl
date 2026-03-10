@@ -4,6 +4,9 @@ using LinearAlgebra
 using LieGroups
 using DocStringExtensions
 using StaticArrays
+using FixedPointNumbers
+using StatsBase
+using ImageCore: colorview, RGB
 import Rotations as Rot_
 import Base: getindex, getproperty, show
 using RecursiveArrayTools: ArrayPartition
@@ -17,6 +20,7 @@ include("entities/GeneralTypes.jl")
 include("entities/CameraCalibration.jl")
 
 include("services/CameraCalibration.jl")
+include("services/RadianceCorrection.jl") # EXPERIMENTAL, not public yet
 
 # legacy implementations
 include("Deprecated.jl")
