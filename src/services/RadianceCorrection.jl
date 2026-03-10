@@ -155,13 +155,15 @@ function solveDetectorResponse(
   # - n equations from smoothness regularization
   # A is size (neqs, Zmax-Zmin+pixel_locations)
   # A = [A1 A2; A3 0], where
-  # A{1,2} is has rows that each contain one column entries, gcurve[zij] = logExposure_ij + logΔt_j
+  # A{1,2} is has rows that each contain two column entries such that, gcurve[zij] = logExposure_ij + logΔt_j
   # - a1: the weight at column z (observed pixel value) and next available column 
   # - a2: the negative weight at column n+i (corresponding to list_i of pixel locations)
   #   A2 is also off-diagonal
   # A3 is the weighted regularization as off diagnonal entries for smoothness of gcurve, and 
-  # b is size (neqs) = [weighted logΔTs; zeros(n)]
-  # x = [gcurve; logExposure] = A * b
+  # b has length (neqs) = [weighted logΔTs; zeros(n)]
+  # x = [gcurve;       = A * b
+  #      logExposure]
+  #
   neqs = nlocs*nimgs + 1 + n
   A = zeros(neqs,n+nlocs)
   b = zeros(neqs)
