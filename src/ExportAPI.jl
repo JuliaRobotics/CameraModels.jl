@@ -1,6 +1,3 @@
-
-
-
 export AbstractCameraModel
 
 export CameraCalibration, CameraCalibrationMutable
@@ -10,7 +7,7 @@ export CameraSkewDistortion
 
 export undistortPoint
 export Ray, PixelIndex
-export pixel2ray, point2pixel, canreproject, sensorsize #, origin, direction, 
+export pixel2ray, point2pixel, canreproject, sensorsize #, origin, direction,
 export project, projectHomogeneous
 export backproject, backprojectHomogeneous
 export pp_w, pp_h, f_w, f_h

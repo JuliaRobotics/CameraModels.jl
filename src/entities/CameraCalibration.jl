@@ -1,4 +1,3 @@
-
 """
     $TYPEDEF
 
@@ -23,7 +22,7 @@ Notes
   - Common *camera-frame* in computer vision and robotics, `(x,y) <==> (width,height) <==> (j,i)`,
   - Using top left corner of image as `(0,0)` in all cases. 
   - Direct comparison with [OpenCV convention](https://docs.opencv.org/3.4/d9/d0c/group__calib3d.html) is:
-    - `(x,y) [CamXYZ] <==> (j,i) [Images.jl] <==> (u,v) [OpenCV]` -- look very carfully at `(u,v) <==> (j,i)` in *image-frame*
+    - `(x,y) [CamXYZ] <==> (j,i) [Images.jl] <==> (u,v) [OpenCV]` -- look very carefully at `(u,v) <==> (j,i)` in *image-frame*
 - Always follow right hand rule for everything.
 - An abstract type [`AbstractCameraModel`](@ref) is provided to develop implementations against `struct` and `mutable struct` types.
 
@@ -33,40 +32,37 @@ DevNotes
 
 Also see: [`AbstractCameraModel`](@ref) [`CameraCalibrationMutable`](@ref), (TODO: `ProjectiveCameraModel`)
 """
-Base.@kwdef struct CameraCalibration{R <: Real,N} <: AbstractCameraModel
-  """ number of pixels from top to bottom """
-  height::Int		       = 480
-  """ number of pixels from left to right """
-  width::Int		       = 640
-  """ distortion coefficients up to fifth order """
-  kc::SVector{N,R}     = SVector(zeros(5)...)
-  """ 3x3 camera calibration matrix """
-  K::SMatrix{3,3,R,9}  = SMatrix{3,3}([[1.1*height;0.0;width/2]';[0.0;1.1*height;height/2]';[0.0;0;1.]'] )
-  """ inverse of a 3x3 camera calibration matrix """
-  Ki::SMatrix{3,3,R,9} = inv(K)
+Base.@kwdef struct CameraCalibration{R <: Real, N} <: AbstractCameraModel
+    """ number of pixels from top to bottom """
+    height::Int = 480
+    """ number of pixels from left to right """
+    width::Int = 640
+    """ distortion coefficients up to fifth order """
+    kc::SVector{N, R} = SVector(zeros(5)...)
+    """ 3x3 camera calibration matrix """
+    K::SMatrix{3, 3, R, 9} = SMatrix{3, 3}([[1.1 * height;0.0;width / 2]';[0.0;1.1 * height;height / 2]';[0.0;0;1.0]'])
+    """ inverse of a 3x3 camera calibration matrix """
+    Ki::SMatrix{3, 3, R, 9} = inv(K)
 end
 
 
 """
     $TYPEDEF
 
-See [`CameraCalibraton`](@ref).
+See [`CameraCalibration`](@ref).
 """
-Base.@kwdef mutable struct CameraCalibrationMutable{R <: Real,N} <: AbstractCameraModel
-  """ number of pixels from top to bottom """
-  height::Int		     = 480
-  """ number of pixels from left to right """
-  width::Int		     = 640
-  """ distortion coefficients up to fifth order """
-  kc::MVector{N,R}   = MVector(zeros(5)...)
-  """ 3x3 camera calibration matrix """
-  K::MMatrix{3,3,R}  = MMatrix{3,3}([[1.1*height;0.0;width/2]';[0.0;1.1*height;height/2]';[0.0;0;1.]'] )
-  """ inverse of a 3x3 camera calibration matrix """
-  Ki::MMatrix{3,3,R} = inv(K)
+Base.@kwdef mutable struct CameraCalibrationMutable{R <: Real, N} <: AbstractCameraModel
+    """ number of pixels from top to bottom """
+    height::Int = 480
+    """ number of pixels from left to right """
+    width::Int = 640
+    """ distortion coefficients up to fifth order """
+    kc::MVector{N, R} = MVector(zeros(5)...)
+    """ 3x3 camera calibration matrix """
+    K::MMatrix{3, 3, R} = MMatrix{3, 3}([[1.1 * height;0.0;width / 2]';[0.0;1.1 * height;height / 2]';[0.0;0;1.0]'])
+    """ inverse of a 3x3 camera calibration matrix """
+    Ki::MMatrix{3, 3, R} = inv(K)
 end
-
-
-
 
 
 ## ===========================================================================
@@ -75,11 +71,9 @@ end
 
 
 Base.@kwdef struct CameraModelFull
-  ci::CameraCalibration = CameraCalibration()
-  ce::ArrayPartition    = ArrayPartition(SVector(0.,0.,0.),SMatrix{3,3}(1.,0.,0.,0.,1.,0.,0.,0.,1.)) # CameraExtrinsic()
+    ci::CameraCalibration = CameraCalibration()
+    ce::ArrayPartition = ArrayPartition(SVector(0.0, 0.0, 0.0), SMatrix{3, 3}(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)) # CameraExtrinsic()
 end
-
-
 
 
 #

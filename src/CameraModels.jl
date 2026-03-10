@@ -1,7 +1,7 @@
 module CameraModels
 
 using LinearAlgebra
-using Manifolds
+using LieGroups
 using DocStringExtensions
 using StaticArrays
 using FixedPointNumbers
@@ -10,6 +10,7 @@ using ImageCore: colorview, RGB
 import Rotations as Rot_
 import Base: getindex, getproperty, show
 using RecursiveArrayTools: ArrayPartition
+using LoopVectorization: @tturbo
 
 # exports
 include("ExportAPI.jl")
@@ -28,8 +29,6 @@ include("Deprecated.jl")
 include("services/Prototypes.jl")
 include("services/CameraServices.jl")
 include("services/Utils.jl")
-
-
 
 
 end # module
