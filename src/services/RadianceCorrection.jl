@@ -217,7 +217,7 @@ function solveDetectorResponse(
   # Extract gcurve and log exposure values from solution vector
   gcurve = x[1:n]
   logExposure = x[(n+1):end]
-  return gcurve, logExposure, A, b
+  return gcurve, logExposure
 end
 
 function solveDetectorResponse(
