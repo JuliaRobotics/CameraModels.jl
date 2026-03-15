@@ -137,16 +137,21 @@ normalized_image = CameraModels.recoverRadianceWeighted_RGB(imgs, est_lΔT, [gr,
 See also: `randomPixels`, `normalizeRadianceMap`, `recoverRadianceWeighted_RGB`, `_pixvalWindow`
 """
 function solveDetectorResponse(
-  Z::AbstractVector,
-  logΔTs::AbstractVector;
+  Z_logΔTs::AbstractVector{<:Tuple{<:AbstractVector, <:AbstractVector}};
   n::Int = 2^8, # common for 3*8 bit RGB;
   window::AbstractVector{<:Real} = _pixvalWindow.(0:(n-1)),
   λ::Real = 200.0,
   diff_kernel::AbstractVector{<:Real} = SA[1, -2, 1],
 )
+  # if 1 < length(Z_logΔTs)
+  #   error("WIP to support disjoint image locations.")
+  # end
+
+  mnimgs = (s->length(first(s))).(Z_logΔTs)
+  mnlocs = (s->length(first(s)[1])).(Z_logΔTs)
+
   # System size
-  nimgs = length(Z)
-  nlocs = length(Z[1])
+  nlocs = +(mnlocs...)
   
   # Prepare a linear system.
   # The total number of equations (neqs), which includes:
@@ -155,30 +160,41 @@ function solveDetectorResponse(
   # - n equations from smoothness regularization
   # A is size (neqs, Zmax-Zmin+pixel_locations)
   # A = [A1 A2; A3 0], where
-  # A{1,2} is has rows that each contain two column entries such that, gcurve[zij] = logExposure_ij + logΔt_j
-  # - a1: the weight at column z (observed pixel value) and next available column 
-  # - a2: the negative weight at column n+i (corresponding to list_i of pixel locations)
-  #   A2 is also off-diagonal
+  # A{1,2} is has rows that each contain two column entries such that, w*gcurve[zij] - w*logE_ij = w*logΔt_j
+  # - a1: the weight at column z (observed pixel value)
+  # - a2: the negative weight at column n+i (corresponding to log exposure of observed pixel location i)
+  #   A2 has striped around the it's diagonal
   # A3 is the weighted regularization as off diagnonal entries for smoothness of gcurve, and 
   # b has length (neqs) = [weighted logΔTs; zeros(n)]
-  # x = [gcurve;       = A * b
-  #      logExposure]
+  # Ax = b  => A * [gcurve;      = [weighted logΔTs; 
+  #                 logExposure]    zeros(n)]
   #
-  neqs = nlocs*nimgs + 1 + n
+  neqs = sum(mnlocs.*mnimgs) + 1 + n
   A = zeros(neqs,n+nlocs)
   b = zeros(neqs)
 
   # Fill in the equations from pixel value observations in A and b,
-  # Note the number of equations is nlocs*nimgs, where each pixel value observation contributes one equation.
+  # Note the number of equations is sum(mnlocs.*mnimgs), where each pixel value observation contributes one equation.
   k = 1;
-  for i in 1:nlocs, j in 1:nimgs
-    # A1 columns correspond to gcurve possible pixel z values, 
-    # A2 columns correspond to logExposure of observed pixels from list of locations i
-    pixz1 = Z[j][i] + 1
-    a_12 = view(A, k, SA[pixz1, n+i])
-    a_12 .= window[pixz1] .* SA[1, -1]
-    b[k] = window[pixz1] * logΔTs[j]
-    k += 1
+  offset = 0
+  for m in 1:length(Z_logΔTs)
+    Z = Z_logΔTs[m][1]
+    logΔTs = Z_logΔTs[m][2]
+    # i is the pixel location index, j is the image index, zij is the observed pixel value at location i in image j
+    locsperimg = length(Z[1])
+    for i in 1:locsperimg
+      for j in 1:length(Z)
+        # A1 columns correspond to gcurve possible pixel z values, 
+        # A2 columns correspond to logExposure of observed pixels from list of locations i
+        pixz1 = Z[j][i] + 1
+        miloc = offset+n+i
+        a_12 = view(A, k, [pixz1, miloc])
+        a_12 .= window[pixz1] .* SA[1, -1]
+        b[k] = window[pixz1] * logΔTs[j]
+        k += 1
+      end
+    end
+    offset += locsperimg
   end
 
   # Add the equation to fix the curve by setting its middle value to 0
@@ -201,7 +217,15 @@ function solveDetectorResponse(
   # Extract gcurve and log exposure values from solution vector
   gcurve = x[1:n]
   logExposure = x[(n+1):end]
-  return gcurve, logExposure
+  return gcurve, logExposure, A, b
+end
+
+function solveDetectorResponse(
+  Z::AbstractVector,
+  logΔTs::AbstractVector;
+  kw...
+)
+  solveDetectorResponse([(Z, logΔTs);]; kw...)
 end
 
 
@@ -218,9 +242,9 @@ end
 
 
 function recoverRadianceWeighted(
-  imgs,
-  logΔts,
-  gcurve;
+  imgs::AbstractVector{<:AbstractMatrix},
+  logΔts::AbstractVector{<:Real},
+  gcurve::AbstractVector{<:Real};
   window::AbstractVector{<:Real} = _pixvalWindow.(0:(2^8 - 1)),
   normalize_percentile::Real = 0.02, # set <= 0 to disable
 )
@@ -249,9 +273,9 @@ end
 
 
 function recoverRadianceWeighted_RGB(
-  imgs,
-  logΔts,
-  gcurve_rgb;
+  imgs::AbstractVector{<:AbstractMatrix{<:RGB{N0f8}}},
+  logΔts::AbstractVector{<:Real},
+  gcurve_rgb::AbstractVector{<:AbstractVector{<:Real}};
   window::AbstractVector{<:Real} = _pixvalWindow.(0:(2^8 - 1)),
   normalize_percentile::Real = 0.02, # set <= 0 to disable
 )
