@@ -143,10 +143,6 @@ function solveDetectorResponse(
   λ::Real = 200.0,
   diff_kernel::AbstractVector{<:Real} = SA[1, -2, 1],
 )
-  # if 1 < length(Z_logΔTs)
-  #   error("WIP to support disjoint image locations.")
-  # end
-
   mnimgs = (s->length(first(s))).(Z_logΔTs)
   mnlocs = (s->length(first(s)[1])).(Z_logΔTs)
 
@@ -217,7 +213,7 @@ function solveDetectorResponse(
   # Extract gcurve and log exposure values from solution vector
   gcurve = x[1:n]
   logExposure = x[(n+1):end]
-  return gcurve, logExposure, A, b
+  return gcurve, logExposure
 end
 
 function solveDetectorResponse(
