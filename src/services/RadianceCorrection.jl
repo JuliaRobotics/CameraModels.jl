@@ -166,7 +166,7 @@ function solveDetectorResponse(
   #                 logExposure]    zeros(n)]
   #
   neqs = sum(mnlocs.*mnimgs) + 1 + n
-  A = zeros(neqs,n+nlocs)
+  A = spzeros(neqs,n+nlocs)
   b = zeros(neqs)
 
   # Fill in the equations from pixel value observations in A and b,
@@ -184,7 +184,7 @@ function solveDetectorResponse(
         # A2 columns correspond to logExposure of observed pixels from list of locations i
         pixz1 = Z[j][i] + 1
         miloc = offset+n+i
-        a_12 = view(A, k, [pixz1, miloc])
+        a_12 = view(A, k, SA[pixz1, miloc])
         a_12 .= window[pixz1] .* SA[1, -1]
         b[k] = window[pixz1] * logΔTs[j]
         k += 1
@@ -211,7 +211,7 @@ function solveDetectorResponse(
   x = A\b
 
   # Extract gcurve and log exposure values from solution vector
-  gcurve = x[1:n]
+  gcurve = collect(x[1:n])
   logExposure = x[(n+1):end]
   return gcurve, logExposure
 end
