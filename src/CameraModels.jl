@@ -3,6 +3,7 @@ module CameraModels
 using LinearAlgebra
 using Manifolds
 using DocStringExtensions
+using SparseArrays
 using StaticArrays
 using FixedPointNumbers
 using StatsBase
